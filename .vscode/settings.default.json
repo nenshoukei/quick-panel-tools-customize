@@ -1,0 +1,7 @@
+{
+  "Lua.workspace.checkThirdParty": "ApplyInMemory",
+  "emmylua.lint.spellCheck": false,
+  "[lua]": {
+    "editor.defaultFormatter": "CppCXY.emmylua-codestyle"
+  }
+}
