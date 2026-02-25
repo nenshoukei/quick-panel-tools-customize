@@ -15,10 +15,10 @@ local stored_shortcuts = {}
 --- Store a mod-data and an item prototype of a shortcut for Customize GUI
 --- @param shortcut data.ShortcutPrototype
 local function store_shortcut(shortcut)
-  table.insert(shortcut_list, {
+  shortcut_list[#shortcut_list + 1] = {
     name = shortcut.name,
     style = shortcut.style,
-  })
+  }
   stored_shortcuts[shortcut.name] = true
 
   data:extend({
@@ -73,9 +73,13 @@ for i, name in ipairs(customization.hidden_shortcuts) do
     store_shortcut(shortcut)
 
     -- Remove the shortcut! (It's dangerous, but no other way to do it...)
+    --
     -- To avoid compatibility issue:
     --   * We use `zzz-` prefix for mod name, so that data-final-fixes.lua will be executed at the very last.
-    --   * Toggleable shortcuts by mod cannot be hidden on Customize GUI.
+    --   * Toggleable shortcuts by mod cannot be hidden on Customize GUI, so that `game.set_shortcut_toggled()` works.
+    --
+    -- However, `game.set_shortcut_available()` still breaks the compatibility.
+    -- There is no way to know whether it will be called on shortcuts created by other mods.
     data.raw["shortcut"][shortcut.name] = nil
   end
 end

@@ -40,6 +40,7 @@ end
 --- @param element LuaGuiElement
 --- @param handler_map table<GuiEventType, GuiComponentEventHandler>
 function GuiComponentMethods:listen_events(element, handler_map)
+  local event_handlers = {}
   for event_type, handler in pairs(handler_map) do
     local bound_handler = bound_handler_map[handler]
     if not bound_handler then
@@ -56,8 +57,9 @@ function GuiComponentMethods:listen_events(element, handler_map)
       component_to_handler_set[self] = { [handler] = true }
     end
 
-    Event.add_event_handler_on_element(element, event_type, bound_handler)
+    event_handlers[event_type] = bound_handler
   end
+  Event.set_event_handlers_on_gui_element(element, event_handlers)
 end
 
 --- Clear all event listeners on this component
@@ -68,7 +70,7 @@ function GuiComponentMethods:clear_all_event_listeners()
   for handler, _ in pairs(handler_set) do
     local bound_handler = bound_handler_map[handler]
     if bound_handler then
-      Event.remove_event_handler(bound_handler)
+      Event.unregister_event_handler(bound_handler)
     end
     bound_handler_map[handler] = nil
   end

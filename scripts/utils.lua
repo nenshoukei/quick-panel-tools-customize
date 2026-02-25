@@ -54,4 +54,30 @@ function utils.table_merge(tbl1, tbl2)
   return result
 end
 
+--- Returns an array of keys from a table
+---
+--- @generic K, V
+--- @param tbl table<K, V>
+--- @return K[]
+function utils.table_keys(tbl)
+  local result = {}
+  for k, _ in pairs(tbl) do
+    result[#result + 1] = k
+  end
+  return result
+end
+
+--- Returns an array of values from a table
+---
+--- @generic K, V
+--- @param tbl table<K, V>
+--- @return V[]
+function utils.table_values(tbl)
+  local result = {}
+  for _, v in pairs(tbl) do
+    result[#result + 1] = v
+  end
+  return result
+end
+
 return utils

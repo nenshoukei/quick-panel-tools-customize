@@ -1,6 +1,7 @@
 --- Stage: runtime
 
 local consts = require("scripts.consts")
+local utils = require("scripts.utils")
 local ShortcutDict = require("scripts.lib.shortcut-dict")
 
 local ShortcutSlots = {
@@ -12,20 +13,22 @@ local ShortcutSlots = {
 --- For visible slots: `"v" .. index`
 ---
 --- For hidden slots: `"h" .. index`
+---
+--- index should be padded with leading zeros to be sortable
 --- @alias ShortcutSlotPosition string
 
 --- @param visible boolean
 --- @param index number
 --- @return ShortcutSlotPosition
 local function make_position(visible, index)
-  return visible and "v" .. index or "h" .. index
+  return (visible and "v" or "h") .. ("%010d"):format(index)
 end
 
 --- @param position ShortcutSlotPosition
 --- @return boolean visible
 --- @return number index
 local function describe_position(position)
-  return position:sub(1, 1) == "v", assert(tonumber(position:sub(2)))
+  return position:sub(1, 1) == "v", assert(tonumber(position:sub(2)), "Invalid position: " .. position)
 end
 
 --- @class ShortcutSlots
@@ -131,8 +134,15 @@ function ShortcutSlotsMethods:swap(from_position, to_position)
 
   local from_name = self.position_to_name[from_position]
   local to_name = self.position_to_name[to_position]
-  self.name_to_position[from_name] = to_position
-  self.name_to_position[to_name] = from_position
+  if from_name == nil and to_name == nil then return end
+
+  if from_name then
+    self.name_to_position[from_name] = to_position
+  end
+  if to_name then
+    self.name_to_position[to_name] = from_position
+  end
+
   self.position_to_name[from_position] = to_name
   self.position_to_name[to_position] = from_name
 end
@@ -143,8 +153,9 @@ end
 function ShortcutSlotsMethods:get_next_index_for_visibility(visible)
   local last_index = 0
   for _, position in pairs(self.name_to_position) do
-    if describe_position(position).visible == visible then
-      last_index = math.max(last_index, position.index)
+    local pos_visible, pos_index = describe_position(position)
+    if pos_visible == visible then
+      last_index = math.max(last_index, pos_index)
     end
   end
   return last_index + 1
@@ -156,8 +167,9 @@ function ShortcutSlotsMethods:toggle_visibility(position)
   local name = self.position_to_name[position]
   if not name then return nil end
 
-  local to_index = self:get_next_index_for_visibility(not position.visible)
-  local to_position = make_position(not position.visible, to_index)
+  local visible = describe_position(position)
+  local to_index = self:get_next_index_for_visibility(not visible)
+  local to_position = make_position(not visible, to_index)
   self.name_to_position[name] = to_position
   self.position_to_name[to_position] = name
   self.position_to_name[position] = nil
@@ -191,14 +203,13 @@ function ShortcutSlotsMethods:iter_visible_pages()
             return nil
           end
 
-          --- @type ShortcutSlotPosition
-          local position = { visible = true, index = slot_index }
+          local position = make_position(true, slot_index)
 
           --- @type ShortcutSlots.VisibleSlotInfo
           local slot_info = {
             index = slot_index,
             index_in_page = slot_index_in_page,
-            name = self.key_to_name[position_to_key(position)],
+            name = self.position_to_name[position],
             position = position,
           }
 
@@ -223,17 +234,14 @@ function ShortcutSlotsMethods:iter_hidden_slots()
       return nil
     end
 
+    local position = make_position(false, slot_index)
+
     --- @type ShortcutSlots.SlotInfo
     local slot_info = {
       index = slot_index,
-      name = nil,
-      position = { visible = false, index = slot_index },
+      name = self.position_to_name[position],
+      position = position,
     }
-
-    local name = self.key_to_name[position_to_key(slot_info.position)]
-    if name then
-      slot_info.name = name
-    end
 
     slot_index = slot_index + 1
     return slot_info
@@ -247,26 +255,25 @@ function ShortcutSlotsMethods:get_customization()
   --- @type ShortcutName[]
   local hidden_shortcuts = {}
 
+  local positions = utils.table_keys(self.position_to_name)
+  table.sort(positions)
+
   local last_visible_index = 0
-  for name, position in pairs(self.name_to_position) do
-    if position.visible then
-      if position.index > last_visible_index + 1 then
-        -- We should fill the gap with placeholder slots
-        for i = last_visible_index + 1, position.index - 1 do
+  for _, position in ipairs(positions) do
+    local visible, index = describe_position(position)
+    if visible then
+      if index > last_visible_index + 1 then
+        -- Fill the gap with placeholder slots
+        for i = last_visible_index + 1, index - 1 do
           shortcuts[i] = ""
         end
-        last_visible_index = position.index
+        last_visible_index = index
       end
-      shortcuts[position.index] = name
+      shortcuts[index] = self.position_to_name[position]
     else
-      table.insert(hidden_shortcuts, name)
+      hidden_shortcuts[#hidden_shortcuts + 1] = self.position_to_name[position]
     end
   end
-
-  -- Keep hidden shortcuts order
-  table.sort(hidden_shortcuts, function (a, b)
-    return self.name_to_position[a].index < self.name_to_position[b].index
-  end)
 
   return {
     shortcuts = shortcuts,

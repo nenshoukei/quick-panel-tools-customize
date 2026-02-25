@@ -73,10 +73,14 @@ local next_handler_id = 1
 
 local HANDLER_ID_TAG_PREFIX = "handler_id_"
 
+--- Register an event handler for the given event type.
+---
+--- If the event handler is already registered, it does nothing, and just returns registered ID.
+---
 --- @param event_type EventType
 --- @param handler EventHandler
---- @return uint handler_id
-function Event.add_event_handler(event_type, handler)
+--- @return uint handler_id Registered handler ID
+function Event.register_event_handler(event_type, handler)
   local handler_id = handler_to_id_map[handler]
   if not handler_id then
     handler_id = next_handler_id
@@ -94,18 +98,23 @@ function Event.add_event_handler(event_type, handler)
   return handler_id
 end
 
+--- Set event handlers for the given GUI element.
+---
 --- @param element LuaGuiElement
---- @param event_type GuiEventType
---- @param handler GuiEventHandler
-function Event.add_event_handler_on_element(element, event_type, handler)
-  local handler_id = Event.add_event_handler(event_type, handler)
-  element.tags = utils.table_merge(element.tags or {}, {
-    [HANDLER_ID_TAG_PREFIX .. tostring(event_type)] = handler_id,
-  })
+--- @param event_handlers table<GuiEventType, GuiEventHandler>
+function Event.set_event_handlers_on_gui_element(element, event_handlers)
+  local new_tags = utils.table_shallow_copy(element.tags or {})
+  for event_type, handler in pairs(event_handlers) do
+    local handler_id = Event.register_event_handler(event_type, handler)
+    new_tags[HANDLER_ID_TAG_PREFIX .. tostring(event_type)] = handler_id
+  end
+  element.tags = new_tags
 end
 
+--- Unregister an event handler.
+---
 --- @param handler EventHandler
-function Event.remove_event_handler(handler)
+function Event.unregister_event_handler(handler)
   local handler_id = handler_to_id_map[handler]
   if handler_id then
     handler_to_id_map[handler] = nil
@@ -121,6 +130,8 @@ function Event.remove_event_handler(handler)
   end
 end
 
+--- Dispatch an event to all registered handlers.
+---
 --- @param event EventData
 function Event.dispatch_event(event)
   local handlers = event_type_to_handlers_map[event.name]
@@ -131,6 +142,8 @@ function Event.dispatch_event(event)
   end
 end
 
+--- Dispatch a GUI event to the registered handler for the given element.
+---
 --- @param event GuiEventData
 function Event.dispatch_gui_event(event)
   local handler_id = event.element.tags[HANDLER_ID_TAG_PREFIX .. tostring(event.name)]
