@@ -8,4 +8,6 @@
 --- @field name ShortcutName
 --- @field style ShortcutStyle?
 
---- @alias ShortcutListModData { shortcut_list: ShortcutListModDataItem[] }
+--- @class ShortcutListModData
+--- @field shortcut_list ShortcutListModDataItem[]
+--- @field placeholder_indexes number[]

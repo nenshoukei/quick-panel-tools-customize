@@ -9,6 +9,9 @@ local customization = Customization.from_settings()
 --- @type ShortcutListModDataItem[]
 local shortcut_list = {}
 
+--- @type number[]
+local placeholder_indexes = {}
+
 --- @type table<ShortcutName, boolean>
 local stored_shortcuts = {}
 
@@ -43,6 +46,7 @@ end
 for i, name in ipairs(customization.shortcuts) do
   if name == "" then
     -- Insert a placeholder shortcut
+    placeholder_indexes[#placeholder_indexes + 1] = i
     data:extend({
       {
         type = "shortcut",
@@ -53,9 +57,6 @@ for i, name in ipairs(customization.shortcuts) do
         icon_size = 32,
         small_icon = consts.resource("blank-x24.png"),
         small_icon_size = 24,
-        -- To make it disabled, we use a dummy technology.
-        technology_to_unlock = consts.DUMMY_TECHNOLOGY_NAME,
-        unavailable_until_unlocked = true,
       },
     })
   else
@@ -76,9 +77,9 @@ for i, name in ipairs(customization.hidden_shortcuts) do
     --
     -- To avoid compatibility issue:
     --   * We use `zzz-` prefix for mod name, so that data-final-fixes.lua will be executed at the very last.
-    --   * Toggleable shortcuts by mod cannot be hidden on Customize GUI, so that `game.set_shortcut_toggled()` works.
+    --   * Toggleable shortcuts by mod cannot be hidden on Customize GUI, so that `player.set_shortcut_toggled()` works.
     --
-    -- However, `game.set_shortcut_available()` still breaks the compatibility.
+    -- However, `player.set_shortcut_available()` still breaks the compatibility.
     -- There is no way to know whether it will be called on shortcuts created by other mods.
     data.raw["shortcut"][shortcut.name] = nil
   end
@@ -95,6 +96,7 @@ end
 --- @type ShortcutListModData
 local mod_data = {
   shortcut_list = shortcut_list,
+  placeholder_indexes = placeholder_indexes,
 }
 
 -- Save mod-data

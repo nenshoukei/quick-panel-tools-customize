@@ -26,7 +26,7 @@ function ShortcutDict.get_from_prototypes()
     dict = {}
 
     local mod_data = prototypes.mod_data[consts.SHORTCUT_LIST_DATA_NAME]
-    local shortcut_list_data = (mod_data and mod_data.data or {}) --[[@as ShortcutListModData]]
+    local shortcut_list_data = assert(mod_data and mod_data.data, "mod-data not found") --[[@as ShortcutListModData]]
 
     for _, shortcut in ipairs(shortcut_list_data.shortcut_list) do
       local item_name = consts.SHORTCUT_ITEM_NAME_PREFIX .. shortcut.name
