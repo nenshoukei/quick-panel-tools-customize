@@ -12,12 +12,12 @@ function utils.is_array(tbl)
   end
 
   -- objects always return empty size
-  if #table > 0 then
+  if #tbl > 0 then
     return true
   end
 
   -- only object can have empty length with elements inside
-  for _ in pairs(table) do
+  for _ in pairs(tbl) do
     return false
   end
 

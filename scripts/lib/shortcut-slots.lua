@@ -4,11 +4,16 @@ local consts = require("scripts.consts")
 local utils = require("scripts.utils")
 local ShortcutDict = require("scripts.lib.shortcut-dict")
 
+--- @class ShortcutSlots
+--- @field name_to_position table<ShortcutName, ShortcutSlotPosition>
+--- @field position_to_name table<ShortcutSlotPosition, ShortcutName>
 local ShortcutSlots = {
   VISIBLE_SLOTS_PER_PAGE = 8,
   MINIMUM_VISIBLE_PAGE_COUNT = 4,
   HIDDEN_SLOTS_PER_ROW = 10,
 }
+ShortcutSlots.__index = ShortcutSlots
+script.register_metatable(consts.name("ShortcutSlots"), ShortcutSlots)
 
 --- For visible slots: `"v" .. index`
 ---
@@ -31,14 +36,6 @@ local function describe_position(position)
   return position:sub(1, 1) == "v", assert(tonumber(position:sub(2)), "Invalid position: " .. position)
 end
 
---- @class ShortcutSlots
---- @field name_to_position table<ShortcutName, ShortcutSlotPosition>
---- @field position_to_name table<ShortcutSlotPosition, ShortcutName>
-local ShortcutSlotsMethods = {}
-
-local metatable = { __index = ShortcutSlotsMethods }
-script.register_metatable(consts.name("ShortcutSlots"), metatable)
-
 --- @class ShortcutSlots.SlotInfo
 --- @field index number
 --- @field name ShortcutName|nil
@@ -57,18 +54,12 @@ script.register_metatable(consts.name("ShortcutSlots"), metatable)
 
 --- @alias ShortcutSlots.VisiblePageIterator fun(): ShortcutSlots.VisiblePageInfo|nil
 
---- @param self ShortcutSlots
---- @return ShortcutSlots
-function ShortcutSlots.setmetatable(self)
-  return setmetatable(self, metatable)
-end
-
 --- @return ShortcutSlots
 function ShortcutSlots.new()
-  return ShortcutSlots.setmetatable({
+  return setmetatable({
     name_to_position = {},
     position_to_name = {},
-  })
+  }, ShortcutSlots)
 end
 
 --- @param customization Customization
@@ -109,27 +100,27 @@ function ShortcutSlots.new_with_customization(customization)
     end
   end
 
-  return ShortcutSlots.setmetatable({
+  return setmetatable({
     name_to_position = name_to_position,
     position_to_name = position_to_name,
-  })
+  }, ShortcutSlots)
 end
 
 --- @param position ShortcutSlotPosition
 --- @return ShortcutName|nil
-function ShortcutSlotsMethods:get_name_at(position)
+function ShortcutSlots:get_name_at(position)
   return self.position_to_name[position]
 end
 
 --- @param name ShortcutName
 --- @return ShortcutSlotPosition|nil
-function ShortcutSlotsMethods:get_position_of(name)
+function ShortcutSlots:get_position_of(name)
   return self.name_to_position[name]
 end
 
 --- @param from_position ShortcutSlotPosition
 --- @param to_position ShortcutSlotPosition
-function ShortcutSlotsMethods:swap(from_position, to_position)
+function ShortcutSlots:swap(from_position, to_position)
   if from_position == to_position then return end
 
   local from_name = self.position_to_name[from_position]
@@ -150,7 +141,7 @@ end
 --- @private
 --- @param visible boolean
 --- @return ShortcutSlotPosition
-function ShortcutSlotsMethods:get_first_empty_slot_position(visible)
+function ShortcutSlots:get_first_empty_slot_position(visible)
   local index = 1
   while true do
     local position = make_position(visible, index)
@@ -163,7 +154,7 @@ end
 
 --- @param position ShortcutSlotPosition
 --- @return ShortcutSlotPosition|nil new_position
-function ShortcutSlotsMethods:toggle_visibility(position)
+function ShortcutSlots:toggle_visibility(position)
   local name = self.position_to_name[position]
   if not name then return nil end
 
@@ -178,7 +169,7 @@ end
 --- @private
 --- @param visible boolean
 --- @return number
-function ShortcutSlotsMethods:get_least_slot_count(visible)
+function ShortcutSlots:get_least_slot_count(visible)
   local max_index = 0
   for _, position in pairs(self.name_to_position) do
     local pos_visible, pos_index = describe_position(position)
@@ -190,10 +181,10 @@ function ShortcutSlotsMethods:get_least_slot_count(visible)
 end
 
 --- @return ShortcutSlots.VisiblePageIterator
-function ShortcutSlotsMethods:iter_visible_pages()
+function ShortcutSlots:iter_visible_pages()
   local least_count = self:get_least_slot_count(true)
-  local page_count = math.max(ShortcutSlots.MINIMUM_VISIBLE_PAGE_COUNT,
-    math.ceil(least_count / ShortcutSlots.VISIBLE_SLOTS_PER_PAGE))
+  local page_count = math.max(self.MINIMUM_VISIBLE_PAGE_COUNT,
+    math.ceil(least_count / self.VISIBLE_SLOTS_PER_PAGE))
   local page_index = 1
 
   --- @return ShortcutSlots.VisiblePageInfo|nil
@@ -208,11 +199,11 @@ function ShortcutSlotsMethods:iter_visible_pages()
     return {
       index = this_page_index,
       iter_slots = function ()
-        local slot_index = (this_page_index - 1) * ShortcutSlots.VISIBLE_SLOTS_PER_PAGE + 1
+        local slot_index = (this_page_index - 1) * self.VISIBLE_SLOTS_PER_PAGE + 1
         local slot_index_in_page = 1
 
         return function ()
-          if slot_index_in_page > ShortcutSlots.VISIBLE_SLOTS_PER_PAGE then
+          if slot_index_in_page > self.VISIBLE_SLOTS_PER_PAGE then
             return nil
           end
 
@@ -236,9 +227,9 @@ function ShortcutSlotsMethods:iter_visible_pages()
 end
 
 --- @return ShortcutSlots.SlotIterator
-function ShortcutSlotsMethods:iter_hidden_slots()
+function ShortcutSlots:iter_hidden_slots()
   local least_count = self:get_least_slot_count(false)
-  local slot_count = math.ceil(least_count / ShortcutSlots.HIDDEN_SLOTS_PER_ROW) * ShortcutSlots.HIDDEN_SLOTS_PER_ROW
+  local slot_count = math.ceil(least_count / self.HIDDEN_SLOTS_PER_ROW) * self.HIDDEN_SLOTS_PER_ROW
   local slot_index = 1
 
   --- @return ShortcutSlots.SlotInfo|nil
@@ -262,7 +253,7 @@ function ShortcutSlotsMethods:iter_hidden_slots()
 end
 
 --- @return Customization
-function ShortcutSlotsMethods:get_customization()
+function ShortcutSlots:get_customization()
   --- @type ShortcutName[]
   local shortcuts = {}
   --- @type ShortcutName[]

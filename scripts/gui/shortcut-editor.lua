@@ -5,61 +5,46 @@ local ShortcutDict = require("scripts.lib.shortcut-dict")
 local ShortcutSlots = require("scripts.lib.shortcut-slots")
 local GuiParts = require("scripts.gui.gui-parts")
 
-local ShortcutEditor = {}
+--- @class ShortcutEditor : GuiComponent
+--- @field player LuaPlayer
+--- @field shortcut_slots ShortcutSlots
+--- @field container LuaGuiElement|nil
+local ShortcutEditor = GuiComponent.define("ShortcutEditor")
 
 --- @class ShortcutSlotButtonTags
 --- @field shortcut_name ShortcutName
 --- @field slot_position ShortcutSlotPosition
 
---- @class ShortcutEditor : GuiComponent
---- @field player LuaPlayer
---- @field shortcut_slots ShortcutSlots
---- @field container LuaGuiElement|nil
-local ShortcutEditorMethods = {}
-
-local metatable = GuiComponent.define("ShortcutEditor", ShortcutEditorMethods)
-
---- @param self ShortcutEditor
---- @return ShortcutEditor
-function ShortcutEditor.setmetatable(self)
-  return setmetatable(self, metatable)
-end
-
 --- @param player LuaPlayer
 --- @param customization Customization
 --- @return ShortcutEditor
 function ShortcutEditor.new(player, customization)
-  return ShortcutEditor.setmetatable({
+  return setmetatable({
     player = player,
     shortcut_slots = ShortcutSlots.new_with_customization(customization),
-  })
+  }, ShortcutEditor)
 end
 
-function ShortcutEditorMethods:on_load()
-  ShortcutSlots.setmetatable(self.shortcut_slots)
-
+function ShortcutEditor:destroy()
   if self.container then
-    -- Remove old GUI elements
-    self:destroy()
-  end
-end
-
-function ShortcutEditorMethods:on_destroy()
-  if self.container then
-    self.container.destroy()
+    if self.container.valid then
+      self.container.destroy()
+    end
     self.container = nil
   end
+  GuiComponent.destroy(self)
 end
 
 --- @param customization Customization
-function ShortcutEditorMethods:reload(customization)
-  self.shortcut_slots = ShortcutSlots.new_from_customization(customization)
+function ShortcutEditor:reload(customization)
+  self.shortcut_slots = ShortcutSlots.new_with_customization(customization)
 end
 
+--- @private
 --- @param parent LuaGuiElement
 --- @param slot ShortcutSlots.SlotInfo
 --- @return LuaGuiElement
-function ShortcutEditorMethods:make_shortcut_slot_button(parent, slot)
+function ShortcutEditor:make_shortcut_slot_button(parent, slot)
   --- @type ShortcutSlotButtonTags
   local tags = {
     shortcut_name = slot.name or "",
@@ -85,16 +70,17 @@ function ShortcutEditorMethods:make_shortcut_slot_button(parent, slot)
     })
   end
 
-  self:listen_events(button, {
+  self:listen_to_gui_events(button, {
     [defines.events.on_gui_click] = self.handle_shortcut_button_clicked,
   })
 
   return button
 end
 
+--- @private
 --- @param button LuaGuiElement
 --- @param slot ShortcutSlots.SlotInfo
-function ShortcutEditorMethods:update_shortcut_slot_button(button, slot)
+function ShortcutEditor:update_shortcut_slot_button(button, slot)
   local tags = button.tags --[[@as ShortcutSlotButtonTags]]
   if tags.shortcut_name == slot.name or (tags.shortcut_name == "" and slot.name == nil) then
     return
@@ -121,10 +107,11 @@ end
 
 local CENTER_INDEX = 5
 
+--- @private
 --- @param parent LuaGuiElement
 --- @param page ShortcutSlots.VisiblePageInfo
 --- @return LuaGuiElement
-function ShortcutEditorMethods:make_shortcut_slot_page(parent, page)
+function ShortcutEditor:make_shortcut_slot_page(parent, page)
   local page_button_frame = parent.add({
     type = "frame",
     style = "slot_button_deep_frame",
@@ -151,9 +138,10 @@ function ShortcutEditorMethods:make_shortcut_slot_page(parent, page)
   return page_button_frame
 end
 
+--- @private
 --- @param page_button_frame LuaGuiElement
 --- @param page ShortcutSlots.VisiblePageInfo
-function ShortcutEditorMethods:update_shortcut_slot_page(page_button_frame, page)
+function ShortcutEditor:update_shortcut_slot_page(page_button_frame, page)
   local page_button_table = page_button_frame.button_table
   local child_index = 1
   for slot in page.iter_slots() do
@@ -166,7 +154,7 @@ function ShortcutEditorMethods:update_shortcut_slot_page(page_button_frame, page
 end
 
 --- @param parent LuaGuiElement
-function ShortcutEditorMethods:render(parent)
+function ShortcutEditor:render(parent)
   if self.container then
     self.container.clear()
   else
@@ -214,7 +202,7 @@ function ShortcutEditorMethods:render(parent)
   end
 end
 
-function ShortcutEditorMethods:update()
+function ShortcutEditor:update()
   if not self.container then return end
 
   local shortcut_pages = self.container.shortcut_pages
@@ -249,12 +237,12 @@ function ShortcutEditorMethods:update()
 end
 
 --- @return Customization
-function ShortcutEditorMethods:get_customization()
+function ShortcutEditor:get_customization()
   return self.shortcut_slots:get_customization()
 end
 
 --- @param event EventData.on_gui_click
-function ShortcutEditorMethods:handle_shortcut_button_clicked(event)
+function ShortcutEditor:handle_shortcut_button_clicked(event)
   local tags = event.element.tags --[[@as ShortcutSlotButtonTags]]
 
   if event.button == defines.mouse_button_type.right then

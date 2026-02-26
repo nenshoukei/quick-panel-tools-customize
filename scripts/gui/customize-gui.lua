@@ -4,8 +4,6 @@ local GuiComponent = require("scripts.lib.gui-component")
 local GuiParts = require("scripts.gui.gui-parts")
 local ShortcutEditor = require("scripts.gui.shortcut-editor")
 
-local CustomizeGui = {}
-
 --- @class CustomizeGui : GuiComponent
 --- @field player LuaPlayer
 --- @field customization Customization
@@ -14,99 +12,55 @@ local CustomizeGui = {}
 --- @field editor_container LuaGuiElement|nil
 --- @field json_text_box LuaGuiElement|nil
 --- @field json_text string|nil
-local CustomizeGuiMethods = {}
-
-local metatable = GuiComponent.define("CustomizeGui", CustomizeGuiMethods)
+local CustomizeGui = GuiComponent.define("CustomizeGui")
 
 local TAB_CUSTOMIZE = 1
 local TAB_JSON = 2
-
---- @param self CustomizeGui
---- @return CustomizeGui
-function CustomizeGui.setmetatable(self)
-  return setmetatable(self, metatable)
-end
 
 --- @param player LuaPlayer
 --- @return CustomizeGui
 function CustomizeGui.new(player)
   local customization = Customization.from_settings()
-  return CustomizeGui.setmetatable({
+  return setmetatable({
     player = player,
     customization = customization,
     editor = ShortcutEditor.new(player, customization),
-  })
+  }, CustomizeGui)
 end
 
-function CustomizeGui.on_init()
-  --- @type table<integer, CustomizeGui> key is player_index
-  storage.customize_guis = {}
+function CustomizeGui:load()
+  GuiComponent.load(self)
+  self.editor:load()
 end
 
-function CustomizeGui.on_load()
-  for player_index, customize_gui in pairs(storage.customize_guis) do
-    local player = game.get_player(player_index)
-    if player then
-      CustomizeGui.setmetatable(customize_gui)
-      customize_gui.player = player
-      customize_gui:on_load()
-    else
-      storage.customize_guis[player_index] = nil
+function CustomizeGui:destroy()
+  if self.window then
+    self.editor:destroy()
+
+    self.editor_container = nil
+    self.json_text_box = nil
+    self.json_text = nil
+
+    if self.player.opened == self.window then
+      self.player.opened = nil
     end
-  end
-end
-
---- @param event ConfigurationChangedData
-function CustomizeGui.on_configuration_changed(event)
-  if event.mod_startup_settings_changed then
-    -- Startup Settings changed, so we rebuild Customization from it
-    local customization = Customization.from_settings()
-    for _, customize_gui in pairs(storage.customize_guis) do
-      customize_gui:set_customization(customization)
+    if self.window.valid then
+      self.window.destroy()
     end
-  end
-end
-
-CustomizeGui.events = {
-  --- @param event EventData.on_lua_shortcut
-  [defines.events.on_lua_shortcut] = function (event)
-    if event.prototype_name == consts.OPEN_GUI_SHORTCUT_NAME then
-      local customize_gui = storage.customize_guis[event.player_index]
-      if not customize_gui then
-        local player = game.get_player(event.player_index)
-        if not player then return end
-
-        customize_gui = CustomizeGui.new(player)
-        storage.customize_guis[event.player_index] = customize_gui
-      end
-
-      customize_gui:open()
-    end
-  end,
-}
-
-function CustomizeGuiMethods:on_load()
-  ShortcutEditor.setmetatable(self.editor)
-  self.editor:on_load()
-
-  if self.window and self.window.valid then
-    self:render()
-  else
     self.window = nil
   end
+  GuiComponent.destroy(self)
 end
 
-function CustomizeGuiMethods:set_customization(customization)
+function CustomizeGui:set_customization(customization)
   self.customization = customization
   self.editor:reload(customization)
-
-  if self.editor_container then
-    self.editor:render(self.editor_container)
-  end
+  self:update()
 end
 
-function CustomizeGuiMethods:open()
+function CustomizeGui:open()
   if self.window and self.window.valid then
+    self:update()
     self:focus()
   else
     self:render()
@@ -114,8 +68,20 @@ function CustomizeGuiMethods:open()
   end
 end
 
-function CustomizeGuiMethods:render()
-  local window_name = consts.name("customize-gui-window-" .. self.player.index)
+function CustomizeGui:close()
+  self:destroy()
+end
+
+function CustomizeGui:focus()
+  if self.window and self.window.valid then
+    self.window.bring_to_front()
+    self.window.force_auto_center()
+    self.player.opened = self.window
+  end
+end
+
+function CustomizeGui:render()
+  local window_name = consts.name(self.component_name)
 
   -- Destroy old window
   local window = self.player.gui.screen[window_name]
@@ -124,18 +90,18 @@ function CustomizeGuiMethods:render()
       self.player.opened = nil
     end
     window.destroy()
-    self:clear_all_event_listeners()
+    self:clear_event_listeners()
   end
 
   window = GuiParts.window(self.player, window_name)
-  self:listen_events(window, {
-    [defines.events.on_gui_closed] = self.handle_gui_closed,
+  self:listen_to_gui_events(window, {
+    [defines.events.on_gui_closed] = self.close,
   })
 
   local titlebar = GuiParts.titlebar(window, consts.str("customize-gui-title"))
   local close_button = GuiParts.close_button(titlebar)
-  self:listen_events(close_button, {
-    [defines.events.on_gui_click] = self.handle_close_button_clicked,
+  self:listen_to_gui_events(close_button, {
+    [defines.events.on_gui_click] = self.close,
   })
 
   local content_frame = window.add({
@@ -148,7 +114,7 @@ function CustomizeGuiMethods:render()
     type = "tabbed-pane",
     name = "tabbed_pane",
   })
-  self:listen_events(tabbed_pane, {
+  self:listen_to_gui_events(tabbed_pane, {
     [defines.events.on_gui_selected_tab_changed] = self.handle_tab_changed,
   })
 
@@ -188,7 +154,7 @@ function CustomizeGuiMethods:render()
     game_controller_interaction = defines.game_controller_interaction.always,
   })
   json_text_box.read_only = true
-  self:listen_events(json_text_box, {
+  self:listen_to_gui_events(json_text_box, {
     [defines.events.on_gui_click] = self.handle_json_text_box_clicked,
   })
 
@@ -200,7 +166,7 @@ function CustomizeGuiMethods:render()
     caption = consts.str("customize"),
     visible = false,
   })
-  self:listen_events(customize_button, {
+  self:listen_to_gui_events(customize_button, {
     [defines.events.on_gui_click] = self.handle_customize_button_clicked,
   })
   GuiParts.footer_drag_handle(footer)
@@ -210,7 +176,7 @@ function CustomizeGuiMethods:render()
     style = "forward_button",
     caption = consts.str("json"),
   })
-  self:listen_events(view_json_button, {
+  self:listen_to_gui_events(view_json_button, {
     [defines.events.on_gui_click] = self.handle_view_json_button_clicked,
   })
 
@@ -220,51 +186,26 @@ function CustomizeGuiMethods:render()
   self.json_text = ""
 end
 
-function CustomizeGuiMethods:close()
-  if self.window then
-    self:clear_all_event_listeners()
-
-    if self.player.opened == self.window then
-      self.player.opened = nil
-    end
-
-    self.editor:destroy()
-
-    self.editor_container = nil
-    self.json_text_box = nil
-    self.json_text = nil
-
-    if self.window.valid then
-      self.window.destroy()
-    end
+function CustomizeGui:update()
+  if self.window and self.window.valid then
+    self.editor:update()
+    self:update_json_text_box()
+    self:update_footer()
+  else
     self.window = nil
   end
 end
 
-function CustomizeGuiMethods:on_destroy()
-  self:close()
-end
-
-function CustomizeGuiMethods:focus()
-  if self.window and self.window.valid then
-    self.window.bring_to_front()
-    self.window.force_auto_center()
-    self.player.opened = self.window
-  end
-end
-
-function CustomizeGuiMethods:update_json_text_box()
+function CustomizeGui:update_json_text_box()
   if not self.json_text_box then return end
 
   local customization = self.editor:get_customization()
 
   self.json_text = Customization.to_json(customization)
   self.json_text_box.text = self.json_text
-  self.json_text_box.focus()
-  self.json_text_box.select_all()
 end
 
-function CustomizeGuiMethods:update_footer()
+function CustomizeGui:update_footer()
   if not self.window then return end
   local footer = self.window.footer
   local selected_tab_index = self.window.content_frame.tabbed_pane.selected_tab_index
@@ -272,18 +213,8 @@ function CustomizeGuiMethods:update_footer()
   footer.view_json_button.visible = selected_tab_index == TAB_CUSTOMIZE
 end
 
---- @param event EventData.on_gui_closed
-function CustomizeGuiMethods:handle_gui_closed(event)
-  self:close()
-end
-
---- @param event EventData.on_gui_click
-function CustomizeGuiMethods:handle_close_button_clicked(event)
-  self:close()
-end
-
 --- @param event EventData.on_gui_selected_tab_changed
-function CustomizeGuiMethods:handle_tab_changed(event)
+function CustomizeGui:handle_tab_changed(event)
   if event.element.selected_tab_index == TAB_JSON then
     self:update_json_text_box()
   end
@@ -291,20 +222,20 @@ function CustomizeGuiMethods:handle_tab_changed(event)
 end
 
 --- @param event EventData.on_gui_click
-function CustomizeGuiMethods:handle_customize_button_clicked(event)
+function CustomizeGui:handle_customize_button_clicked(event)
   self.window.content_frame.tabbed_pane.selected_tab_index = TAB_CUSTOMIZE
   self:update_footer()
 end
 
 --- @param event EventData.on_gui_click
-function CustomizeGuiMethods:handle_view_json_button_clicked(event)
+function CustomizeGui:handle_view_json_button_clicked(event)
   self.window.content_frame.tabbed_pane.selected_tab_index = TAB_JSON
   self:update_json_text_box()
   self:update_footer()
 end
 
 --- @param event EventData.on_gui_click
-function CustomizeGuiMethods:handle_json_text_box_clicked(event)
+function CustomizeGui:handle_json_text_box_clicked(event)
   event.element.select_all()
 end
 

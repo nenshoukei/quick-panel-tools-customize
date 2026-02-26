@@ -4,6 +4,10 @@ local Customization = require("scripts.lib.customization")
 --- Load the customization from startup settings
 local customization = Customization.from_settings()
 
+--- Prototypes for data:extend() later
+--- @type data.AnyPrototype[]
+local prototypes = {}
+
 --- mod-data for storing all shortcuts including hidden ones
 --- and also for storing fields not provided by LuaGuiPrototype
 --- @type ShortcutListModDataItem[]
@@ -15,7 +19,7 @@ local placeholder_indexes = {}
 --- @type table<ShortcutName, boolean>
 local stored_shortcuts = {}
 
---- Store a mod-data and an item prototype of a shortcut for Customize GUI
+--- Store a shortcut data as ItemPrototype for Customize GUI
 --- @param shortcut data.ShortcutPrototype
 local function store_shortcut(shortcut)
   shortcut_list[#shortcut_list + 1] = {
@@ -24,41 +28,39 @@ local function store_shortcut(shortcut)
   }
   stored_shortcuts[shortcut.name] = true
 
-  data:extend({
-    {
-      type = "item",
-      name = consts.SHORTCUT_ITEM_NAME_PREFIX .. shortcut.name,
-      localised_name = shortcut.localised_name or { "shortcut-name." .. shortcut.name },
-      localised_description = shortcut.localised_description or { "shortcut-description." .. shortcut.name },
-      icons = shortcut.icons,
-      icon = shortcut.icon,
-      icon_size = shortcut.icon_size,
-      order = shortcut.order,
-      subgroup = consts.SHORTCUT_ITEM_SUBGROUP_NAME,
-      stack_size = 1,
-      flags = { "not-stackable", "hide-from-bonus-gui", "only-in-cursor" },
-      auto_recycle = false,
-      hidden = true,
-    },
-  })
+  prototypes[#prototypes + 1] = {
+    type = "item",
+    name = consts.SHORTCUT_ITEM_NAME_PREFIX .. shortcut.name,
+    localised_name = shortcut.localised_name or { "shortcut-name." .. shortcut.name },
+    localised_description = shortcut.localised_description or { "shortcut-description." .. shortcut.name },
+    icons = shortcut.icons,
+    icon = shortcut.icon,
+    icon_size = shortcut.icon_size,
+    order = shortcut.order,
+    subgroup = consts.SHORTCUT_ITEM_SUBGROUP_NAME,
+    stack_size = 1,
+    flags = { "not-stackable", "hide-from-bonus-gui", "only-in-cursor" },
+    auto_recycle = false,
+    hidden = true,
+  }
 end
 
 for i, name in ipairs(customization.shortcuts) do
   if name == "" then
     -- Insert a placeholder shortcut
     placeholder_indexes[#placeholder_indexes + 1] = i
-    data:extend({
-      {
-        type = "shortcut",
-        name = consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. i,
-        order = ("%010d"):format(i),
-        action = "lua",
-        icon = consts.resource("blank-x32.png"),
-        icon_size = 32,
-        small_icon = consts.resource("blank-x24.png"),
-        small_icon_size = 24,
-      },
-    })
+    prototypes[#prototypes + 1] = {
+      type = "shortcut",
+      name = consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. i,
+      localised_name = "",
+      localised_description = "",
+      order = ("%010d"):format(i),
+      action = "lua",
+      icon = consts.resource("blank-x32.png"),
+      icon_size = 32,
+      small_icon = consts.resource("blank-x24.png"),
+      small_icon_size = 24,
+    }
   else
     local shortcut = data.raw["shortcut"][name]
     if shortcut then
@@ -98,12 +100,10 @@ local mod_data = {
   shortcut_list = shortcut_list,
   placeholder_indexes = placeholder_indexes,
 }
+prototypes[#prototypes + 1] = {
+  type = "mod-data",
+  name = consts.SHORTCUT_LIST_DATA_NAME,
+  data = mod_data,
+}
 
--- Save mod-data
-data:extend({
-  {
-    type = "mod-data",
-    name = consts.SHORTCUT_LIST_DATA_NAME,
-    data = mod_data,
-  },
-})
+data:extend(prototypes)

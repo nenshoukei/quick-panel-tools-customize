@@ -1,7 +1,8 @@
 --- Stage: runtime
 
-local utils = require("scripts.utils")
+local Metatable = require("scripts.lib.metatable")
 
+--- @class Event
 local Event = {}
 
 --- @alias EventType defines.events
@@ -23,24 +24,6 @@ local Event = {}
 --- | defines.events.on_gui_text_changed
 --- | defines.events.on_gui_value_changed
 
---- @type table<GuiEventType, boolean>
-local gui_events = {
-  [defines.events.on_gui_checked_state_changed] = true,
-  [defines.events.on_gui_click] = true,
-  [defines.events.on_gui_closed] = true,
-  [defines.events.on_gui_confirmed] = true,
-  [defines.events.on_gui_elem_changed] = true,
-  [defines.events.on_gui_hover] = true,
-  [defines.events.on_gui_leave] = true,
-  [defines.events.on_gui_location_changed] = true,
-  [defines.events.on_gui_opened] = true,
-  [defines.events.on_gui_selected_tab_changed] = true,
-  [defines.events.on_gui_selection_state_changed] = true,
-  [defines.events.on_gui_switch_state_changed] = true,
-  [defines.events.on_gui_text_changed] = true,
-  [defines.events.on_gui_value_changed] = true,
-}
-
 --- @alias GuiEventData
 --- | EventData.on_gui_checked_state_changed
 --- | EventData.on_gui_click
@@ -59,73 +42,35 @@ local gui_events = {
 
 --- @alias GuiEventHandler fun(event: GuiEventData)
 
---- @type table<EventHandler, number>
-local handler_to_id_map = {}
-
---- @type table<number, EventHandler>
-local id_to_handler_map = {}
-
 --- @type table<EventType, table<EventHandler, boolean>>
-local event_type_to_handlers_map = {}
-
---- @type uint
-local next_handler_id = 1
-
-local HANDLER_ID_TAG_PREFIX = "handler_id_"
+local event_type_to_registered_handlers = {}
 
 --- Register an event handler for the given event type.
 ---
---- If the event handler is already registered, it does nothing, and just returns registered ID.
+--- If the event handler is already registered, it does nothing.
 ---
 --- @param event_type EventType
 --- @param handler EventHandler
---- @return uint handler_id Registered handler ID
 function Event.register_event_handler(event_type, handler)
-  local handler_id = handler_to_id_map[handler]
-  if not handler_id then
-    handler_id = next_handler_id
-    next_handler_id = next_handler_id + 1
-    handler_to_id_map[handler] = handler_id
-    id_to_handler_map[handler_id] = handler
-
-    if event_type_to_handlers_map[event_type] then
-      event_type_to_handlers_map[event_type][handler] = true
-    else
-      event_type_to_handlers_map[event_type] = { [handler] = true }
-      script.on_event(event_type, gui_events[event_type] and Event.dispatch_gui_event or Event.dispatch_event)
-    end
+  local registered_handlers = event_type_to_registered_handlers[event_type]
+  if not registered_handlers then
+    registered_handlers = {}
+    setmetatable(registered_handlers, Metatable.weak_key_metatable)
+    event_type_to_registered_handlers[event_type] = registered_handlers
+    script.on_event(event_type, Event.dispatch_event)
   end
-  return handler_id
-end
-
---- Set event handlers for the given GUI element.
----
---- @param element LuaGuiElement
---- @param event_handlers table<GuiEventType, GuiEventHandler>
-function Event.set_event_handlers_on_gui_element(element, event_handlers)
-  local new_tags = utils.table_shallow_copy(element.tags or {})
-  for event_type, handler in pairs(event_handlers) do
-    local handler_id = Event.register_event_handler(event_type, handler)
-    new_tags[HANDLER_ID_TAG_PREFIX .. tostring(event_type)] = handler_id
-  end
-  element.tags = new_tags
+  registered_handlers[handler] = true
 end
 
 --- Unregister an event handler.
 ---
 --- @param handler EventHandler
 function Event.unregister_event_handler(handler)
-  local handler_id = handler_to_id_map[handler]
-  if handler_id then
-    handler_to_id_map[handler] = nil
-    id_to_handler_map[handler_id] = nil
-
-    for event_type, handlers in pairs(event_type_to_handlers_map) do
-      handlers[handler] = nil
-      if not next(handlers, nil) then
-        event_type_to_handlers_map[event_type] = nil
-        script.on_event(event_type, nil)
-      end
+  for event_type, registered_handlers in pairs(event_type_to_registered_handlers) do
+    registered_handlers[handler] = nil
+    if not next(registered_handlers, nil) then
+      event_type_to_registered_handlers[event_type] = nil
+      script.on_event(event_type, nil)
     end
   end
 end
@@ -134,23 +79,17 @@ end
 ---
 --- @param event EventData
 function Event.dispatch_event(event)
-  local handlers = event_type_to_handlers_map[event.name]
+  local handlers = event_type_to_registered_handlers[event.name]
   if handlers then
+    local is_empty = true
     for handler in pairs(handlers) do
       handler(event)
+      is_empty = false
     end
-  end
-end
-
---- Dispatch a GUI event to the registered handler for the given element.
----
---- @param event GuiEventData
-function Event.dispatch_gui_event(event)
-  local handler_id = event.element.tags[HANDLER_ID_TAG_PREFIX .. tostring(event.name)]
-  if handler_id then
-    local handler = id_to_handler_map[handler_id]
-    if handler then
-      handler(event)
+    if is_empty then
+      -- It could be empty because it is a weak key table
+      event_type_to_registered_handlers[event.name] = nil
+      script.on_event(event.name, nil)
     end
   end
 end

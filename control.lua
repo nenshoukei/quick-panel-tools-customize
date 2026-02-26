@@ -1,8 +1,7 @@
 local event_handler = require("__core__.lualib.event_handler")
-local consts = require("scripts.consts")
 
 event_handler.add_libraries({
-  require("scripts.gui.customize-gui"),
+  require("scripts.control.shortcut-control"),
   {
     on_init = function ()
       if script.active_mods["debugadapter"] then
@@ -14,18 +13,5 @@ event_handler.add_libraries({
         end
       end
     end,
-
-    on_load = function ()
-      -- Make placeholder shortcuts unavailable
-      local mod_data = prototypes.mod_data[consts.SHORTCUT_LIST_DATA_NAME]
-      local shortcut_list_data = assert(mod_data and mod_data.data, "mod-data not found") --[[@as ShortcutListModData]]
-      for _, index in ipairs(shortcut_list_data.placeholder_indexes) do
-        for _, player in pairs(game.players) do
-          player.set_shortcut_available(consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. index, false)
-        end
-      end
-    end,
   },
 })
-
-if script.active_mods["gvv"] then require("__gvv__.gvv")() end
