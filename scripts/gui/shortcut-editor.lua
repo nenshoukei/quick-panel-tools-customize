@@ -8,7 +8,7 @@ local GuiParts = require("scripts.gui.gui-parts")
 local ShortcutEditor = {}
 
 --- @class ShortcutSlotButtonTags
---- @field shortcut_name ShortcutName|nil
+--- @field shortcut_name ShortcutName
 --- @field slot_position ShortcutSlotPosition
 
 --- @class ShortcutEditor : GuiComponent
@@ -62,7 +62,7 @@ end
 function ShortcutEditorMethods:make_shortcut_slot_button(parent, slot)
   --- @type ShortcutSlotButtonTags
   local tags = {
-    shortcut_name = slot.name,
+    shortcut_name = slot.name or "",
     slot_position = slot.position,
   }
 
@@ -96,13 +96,13 @@ end
 --- @param slot ShortcutSlots.SlotInfo
 function ShortcutEditorMethods:update_shortcut_slot_button(button, slot)
   local tags = button.tags --[[@as ShortcutSlotButtonTags]]
-  if tags.shortcut_name == slot.name then
+  if tags.shortcut_name == slot.name or (tags.shortcut_name == "" and slot.name == nil) then
     return
   end
 
   --- @type ShortcutSlotButtonTags
   button.tags = utils.table_merge(button.tags, {
-    shortcut_name = slot.name,
+    shortcut_name = slot.name or "",
     slot_position = slot.position,
   })
 
@@ -280,7 +280,7 @@ function ShortcutEditorMethods:handle_shortcut_button_clicked(event)
     return
   end
 
-  if tags.shortcut_name then
+  if tags.shortcut_name and tags.shortcut_name ~= "" then
     local dict = ShortcutDict.get_from_prototypes()
     local shortcut = dict[tags.shortcut_name] --[[@as ShortcutDictEntry]]
     if shortcut then

@@ -7,7 +7,7 @@ local ShortcutDict = require("scripts.lib.shortcut-dict")
 local ShortcutSlots = {
   VISIBLE_SLOTS_PER_PAGE = 8,
   MINIMUM_VISIBLE_PAGE_COUNT = 4,
-  HIDDEN_SLOTS_PER_ROW = 20,
+  HIDDEN_SLOTS_PER_ROW = 10,
 }
 
 --- For visible slots: `"v" .. index`
@@ -149,16 +149,16 @@ end
 
 --- @private
 --- @param visible boolean
---- @return number
-function ShortcutSlotsMethods:get_next_index_for_visibility(visible)
-  local last_index = 0
-  for _, position in pairs(self.name_to_position) do
-    local pos_visible, pos_index = describe_position(position)
-    if pos_visible == visible then
-      last_index = math.max(last_index, pos_index)
+--- @return ShortcutSlotPosition
+function ShortcutSlotsMethods:get_first_empty_slot_position(visible)
+  local index = 1
+  while true do
+    local position = make_position(visible, index)
+    if not self.position_to_name[position] then
+      return position
     end
+    index = index + 1
   end
-  return last_index + 1
 end
 
 --- @param position ShortcutSlotPosition
@@ -168,19 +168,32 @@ function ShortcutSlotsMethods:toggle_visibility(position)
   if not name then return nil end
 
   local visible = describe_position(position)
-  local to_index = self:get_next_index_for_visibility(not visible)
-  local to_position = make_position(not visible, to_index)
+  local to_position = self:get_first_empty_slot_position(not visible)
   self.name_to_position[name] = to_position
   self.position_to_name[to_position] = name
   self.position_to_name[position] = nil
   return to_position
 end
 
+--- @private
+--- @param visible boolean
+--- @return number
+function ShortcutSlotsMethods:get_least_slot_count(visible)
+  local max_index = 0
+  for _, position in pairs(self.name_to_position) do
+    local pos_visible, pos_index = describe_position(position)
+    if pos_visible == visible then
+      max_index = math.max(max_index, pos_index)
+    end
+  end
+  return max_index + 1 -- Always have one empty slot at the end
+end
+
 --- @return ShortcutSlots.VisiblePageIterator
 function ShortcutSlotsMethods:iter_visible_pages()
-  local next_index = self:get_next_index_for_visibility(true)
+  local least_count = self:get_least_slot_count(true)
   local page_count = math.max(ShortcutSlots.MINIMUM_VISIBLE_PAGE_COUNT,
-    math.ceil(next_index / ShortcutSlots.VISIBLE_SLOTS_PER_PAGE))
+    math.ceil(least_count / ShortcutSlots.VISIBLE_SLOTS_PER_PAGE))
   local page_index = 1
 
   --- @return ShortcutSlots.VisiblePageInfo|nil
@@ -224,8 +237,8 @@ end
 
 --- @return ShortcutSlots.SlotIterator
 function ShortcutSlotsMethods:iter_hidden_slots()
-  local next_index = self:get_next_index_for_visibility(false)
-  local slot_count = math.ceil(next_index / ShortcutSlots.HIDDEN_SLOTS_PER_ROW) * ShortcutSlots.HIDDEN_SLOTS_PER_ROW
+  local least_count = self:get_least_slot_count(false)
+  local slot_count = math.ceil(least_count / ShortcutSlots.HIDDEN_SLOTS_PER_ROW) * ShortcutSlots.HIDDEN_SLOTS_PER_ROW
   local slot_index = 1
 
   --- @return ShortcutSlots.SlotInfo|nil
@@ -267,9 +280,9 @@ function ShortcutSlotsMethods:get_customization()
         for i = last_visible_index + 1, index - 1 do
           shortcuts[i] = ""
         end
-        last_visible_index = index
       end
       shortcuts[index] = self.position_to_name[position]
+      last_visible_index = index
     else
       hidden_shortcuts[#hidden_shortcuts + 1] = self.position_to_name[position]
     end
