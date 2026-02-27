@@ -5,7 +5,7 @@ local utils = {}
 --- Copied from https://stackoverflow.com/a/52697380
 ---
 --- @param tbl table
---- @return boolean result Whether tbl is an arrray (sequence keys) or not
+--- @return boolean result Whether tbl is an array (sequence keys) or not
 function utils.is_array(tbl)
   if type(tbl) ~= "table" then
     return false

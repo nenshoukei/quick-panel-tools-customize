@@ -78,6 +78,7 @@ Based on Lua 5.2.1
 
 ### Testing
 
+- Use [busted](https://github.com/lunarmodules/busted) for unit testing.
 - Use `tests/` directory for unit test files.
 - Test files should follow the naming convention: `test-*.lua`.
 - Use `script.on_event(defines.events.on_tick)` for test execution in development.
