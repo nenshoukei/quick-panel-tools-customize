@@ -28,6 +28,12 @@ Based on Lua 5.2.1
 - Prefer `local function name()` to define a local function than `local name = function()`.
 - Prefer `function table.name()` to define a method than `table.name = function()`.
 
+### Error Handling
+
+- Always validate required parameters at the beginning of functions.
+- Use `assert()` for development-time checks.
+- Use `if condition then return end` for early returns.
+
 ## Factorio specific
 
 - `pairs()` / `next()`: Iteration order is guaranteed to be insertion order. Keys inserted first are iterated first.
