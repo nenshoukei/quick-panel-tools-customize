@@ -1,11 +1,11 @@
 package = "quick-panel-tools-customize"
 version = "dev-1"
 source = {
-   url = "*** please add URL for source tarball, zip or repository here ***"
+   url = "https://github.com/nenshoukei/quick-panel-tools-customize"
 }
 description = {
    detailed = "A Factorio mod that allows you to customize the tools tab of the Quick Panel, which is primarily used when playing on a Steam Deck or with a controller.",
-   homepage = "*** please enter a project homepage ***",
+   homepage = "https://github.com/nenshoukei/quick-panel-tools-customize",
    license = "The MIT License"
 }
 dependencies = {
