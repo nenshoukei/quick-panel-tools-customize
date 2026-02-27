@@ -1,5 +1,5 @@
 local PREFIX = "mks-qptc"
-local MOD_DIR = "__zzz-quick-panel-tools-customize__"
+local MOD_DIR = "__quick-panel-tools-customize__"
 local RESOURCES_DIR = MOD_DIR .. "/resources"
 
 --- @param key string
