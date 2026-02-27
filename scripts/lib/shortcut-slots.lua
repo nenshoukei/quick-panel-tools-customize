@@ -90,8 +90,8 @@ function ShortcutSlots.new_with_customization(customization)
     end
   end
 
-  -- New shortcuts
-  for name, _ in pairs(dict) do
+  -- New shortcuts, dict is sorted as the same order as Factorio's tool panel
+  for name in pairs(dict) do
     if not name_to_position[name] then
       local position = make_position(true, next_visible_index)
       name_to_position[name] = position
