@@ -9,6 +9,7 @@ local GuiParts = require("scripts.gui.gui-parts")
 --- @field player LuaPlayer
 --- @field shortcut_slots ShortcutSlots
 --- @field container LuaGuiElement|nil
+--- @field shortcut_in_cursor_stack ShortcutName|nil
 local ShortcutEditor = GuiComponent.define("ShortcutEditor")
 
 --- @class ShortcutSlotButtonTags
@@ -26,13 +27,20 @@ function ShortcutEditor.new(player, customization)
 end
 
 function ShortcutEditor:destroy()
+  GuiComponent.destroy(self)
+
   if self.container then
     if self.container.valid then
       self.container.destroy()
     end
     self.container = nil
   end
-  GuiComponent.destroy(self)
+
+  -- Remove shortcut from cursor stack
+  if self.shortcut_in_cursor_stack then
+    self.player.cursor_stack.clear()
+    self.shortcut_in_cursor_stack = nil
+  end
 end
 
 --- @param customization Customization
@@ -80,6 +88,13 @@ end
 --- @param button LuaGuiElement
 --- @param slot ShortcutSlots.SlotInfo
 function ShortcutEditor:update_shortcut_slot_button(button, slot)
+  -- Toggled if the shortcut is in the cursor stack currently
+  if slot.name then
+    button.toggled = self.shortcut_in_cursor_stack == slot.name
+  else
+    button.toggled = false
+  end
+
   local tags = button.tags --[[@as ShortcutSlotButtonTags]]
   if tags.shortcut_name == slot.name or (tags.shortcut_name == "" and slot.name == nil) then
     return
@@ -195,21 +210,34 @@ function ShortcutEditor:render(parent)
     style = "slot_table",
     column_count = ShortcutSlots.HIDDEN_SLOTS_PER_ROW,
   })
+  local is_hiding_customize_gui_shortcut = false
   local is_hiding_modded_shortcut = false
   for slot in self.shortcut_slots:iter_hidden_slots() do
     self:make_shortcut_slot_button(hidden_button_table, slot)
-    if slot.name then
+    if slot.name == consts.OPEN_GUI_SHORTCUT_NAME then
+      is_hiding_customize_gui_shortcut = true
+    elseif slot.name then
       local shortcut = ShortcutDict.get(slot.name)
       if shortcut and shortcut.is_modded then
         is_hiding_modded_shortcut = true
       end
     end
   end
+  hidden_button_frame.style.bottom_margin = 8
+
+  local customize_gui_warning = GuiParts.icon_label(self.container, "utility/warning_white",
+    consts.str("customize-gui-shortcut-warning"), { name = "customize_gui_warning" })
+  customize_gui_warning.visible = is_hiding_customize_gui_shortcut
+  customize_gui_warning.style.top_margin = 4
 
   local modded_tools_warning = GuiParts.icon_label(self.container, "utility/warning_white",
     consts.str("modded-tools-warning"), { name = "modded_tools_warning" })
   modded_tools_warning.visible = is_hiding_modded_shortcut
-  modded_tools_warning.style.top_margin = 12
+  modded_tools_warning.style.top_margin = 4
+
+  self:listen_to_events({
+    [defines.events.on_player_cursor_stack_changed] = self.handle_cursor_stack_changed,
+  })
 end
 
 function ShortcutEditor:update()
@@ -232,6 +260,7 @@ function ShortcutEditor:update()
 
   local hidden_button_table = self.container.hidden_button_frame.button_table
   local hidden_slot_count = 0
+  local is_hiding_customize_gui_shortcut = false
   local is_hiding_modded_shortcut = false
   for slot in self.shortcut_slots:iter_hidden_slots() do
     local slot_button = hidden_button_table.children[slot.index]
@@ -241,7 +270,9 @@ function ShortcutEditor:update()
       self:make_shortcut_slot_button(hidden_button_table, slot)
     end
 
-    if slot.name then
+    if slot.name == consts.OPEN_GUI_SHORTCUT_NAME then
+      is_hiding_customize_gui_shortcut = true
+    elseif slot.name then
       local shortcut = ShortcutDict.get(slot.name)
       if shortcut and shortcut.is_modded then
         is_hiding_modded_shortcut = true
@@ -254,19 +285,13 @@ function ShortcutEditor:update()
     hidden_button_table.children[i].destroy()
   end
 
+  self.container.customize_gui_warning.visible = is_hiding_customize_gui_shortcut
   self.container.modded_tools_warning.visible = is_hiding_modded_shortcut
 end
 
 --- @return Customization
 function ShortcutEditor:get_customization()
   return self.shortcut_slots:get_customization()
-end
-
-function ShortcutEditor:show_hiding_open_gui_error()
-  self.player.create_local_flying_text({
-    text = consts.str("hiding-open-gui-error"),
-    create_at_cursor = true,
-  })
 end
 
 function ShortcutEditor:show_hiding_toggleable_tool_error()
@@ -284,10 +309,6 @@ function ShortcutEditor:toggle_visibility(position)
   local shortcut = ShortcutDict.get(name)
   if not shortcut then return false end
 
-  if name == consts.OPEN_GUI_SHORTCUT_NAME then
-    self:show_hiding_open_gui_error()
-    return false
-  end
   if shortcut.toggleable then
     self:show_hiding_toggleable_tool_error()
     return false
@@ -308,10 +329,6 @@ function ShortcutEditor:put_shortcut_into_slot(name, to_position)
   if not shortcut then return false end
 
   if self.shortcut_slots:is_hidden_position(to_position) then
-    if name == consts.OPEN_GUI_SHORTCUT_NAME then
-      self:show_hiding_open_gui_error()
-      return false
-    end
     if shortcut.toggleable then
       self:show_hiding_toggleable_tool_error()
       return false
@@ -333,27 +350,36 @@ function ShortcutEditor:handle_shortcut_button_clicked(event)
     return
   end
 
-  local cursor_stack = self.player.cursor_stack
-  if not cursor_stack then return end
-
-  if cursor_stack.valid_for_read then
-    if cursor_stack.prototype.subgroup.name == consts.SHORTCUT_ITEM_SUBGROUP_NAME then
-      -- Player is holding shortcut item
-      local shortcut_name = string.sub(cursor_stack.name, #consts.SHORTCUT_ITEM_NAME_PREFIX + 1)
-      if self:put_shortcut_into_slot(shortcut_name, tags.slot_position) then
-        cursor_stack.clear()
-      end
-    end
-    -- Any other item cannot be put into shortcut slots
+  if self.shortcut_in_cursor_stack then
+    self:put_shortcut_into_slot(self.shortcut_in_cursor_stack, tags.slot_position)
+    self.player.cursor_stack.clear()
     return
   end
 
   if tags.shortcut_name and tags.shortcut_name ~= "" then
     local shortcut = ShortcutDict.get(tags.shortcut_name)
-    if shortcut then
+    if shortcut and self.player.cursor_stack then
       -- Hold the shortcut item
-      cursor_stack.set_stack({ name = shortcut.item_name, count = 1 })
+      self.player.cursor_stack.set_stack({ name = shortcut.item_name, count = 1 })
     end
+  end
+end
+
+--- @param event EventData.on_player_cursor_stack_changed
+function ShortcutEditor:handle_cursor_stack_changed(event)
+  local player = game.get_player(event.player_index)
+  local old = self.shortcut_in_cursor_stack
+  self.shortcut_in_cursor_stack = nil
+  if player then
+    local cursor_stack = player.cursor_stack
+    if cursor_stack and cursor_stack.valid_for_read then
+      if cursor_stack.prototype.subgroup.name == consts.SHORTCUT_ITEM_SUBGROUP_NAME then
+        self.shortcut_in_cursor_stack = string.sub(cursor_stack.name, #consts.SHORTCUT_ITEM_NAME_PREFIX + 1)
+      end
+    end
+  end
+  if self.container and old ~= self.shortcut_in_cursor_stack then
+    self:update()
   end
 end
 

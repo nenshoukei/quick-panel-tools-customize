@@ -65,6 +65,14 @@ function CustomizeGui:close()
   self:destroy()
 end
 
+function CustomizeGui:toggle()
+  if self.window then
+    self:close()
+  else
+    self:open()
+  end
+end
+
 function CustomizeGui:focus()
   if self.window and self.window.valid then
     self.window.bring_to_front()
@@ -84,7 +92,6 @@ function CustomizeGui:render()
       self.player.opened = nil
     end
     window.destroy()
-    self:clear_event_listeners()
   end
 
   window = GuiParts.window(self.player, window_name)
