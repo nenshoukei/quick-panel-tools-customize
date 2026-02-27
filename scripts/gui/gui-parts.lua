@@ -125,4 +125,29 @@ function GuiParts.paragraphs(parent, captions, options)
   return paragraphs
 end
 
+--- @param parent LuaGuiElement
+--- @param icon SpritePath
+--- @param caption LocalisedString
+--- @param options { name: string?, style: string? }?
+--- @return LuaGuiElement
+function GuiParts.icon_label(parent, icon, caption, options)
+  local icon_label = parent.add({
+    type = "flow",
+    name = options and options.name,
+    style = consts.name("icon-label"),
+    direction = "horizontal",
+  })
+  icon_label.add({
+    type = "sprite",
+    sprite = icon,
+    style = consts.name("icon-label-icon"),
+  })
+  icon_label.add({
+    type = "label",
+    caption = caption,
+    style = options and options.style,
+  })
+  return icon_label
+end
+
 return GuiParts

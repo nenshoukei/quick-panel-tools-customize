@@ -54,6 +54,17 @@ styles[consts.name("paragraphs")] = {
   bottom_margin = 8,
 }
 
+styles[consts.name("icon-label")] = {
+  type = "horizontal_flow_style",
+  horizontal_spacing = 4,
+  vertical_align = "center",
+}
+styles[consts.name("icon-label-icon")] = {
+  type = "image_style",
+  size = 24,
+  stretch_image_to_widget_size = true,
+}
+
 -- CustomizeGui
 
 styles[consts.name("tab-content")] = {

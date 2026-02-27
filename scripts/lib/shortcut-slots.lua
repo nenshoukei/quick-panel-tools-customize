@@ -9,7 +9,7 @@ local ShortcutDict = require("scripts.lib.shortcut-dict")
 --- @field position_to_name table<ShortcutSlotPosition, ShortcutName>
 local ShortcutSlots = {
   VISIBLE_SLOTS_PER_PAGE = 8,
-  MINIMUM_VISIBLE_PAGE_COUNT = 4,
+  MINIMUM_VISIBLE_PAGE_COUNT = 5,
   HIDDEN_SLOTS_PER_ROW = 10,
 }
 ShortcutSlots.__index = ShortcutSlots
@@ -65,7 +65,7 @@ end
 --- @param customization Customization
 --- @return ShortcutSlots
 function ShortcutSlots.new_with_customization(customization)
-  local dict = ShortcutDict.get_from_prototypes()
+  local dict = ShortcutDict.get_all()
 
   --- @type table<ShortcutName, ShortcutSlotPosition>
   local name_to_position = {}
@@ -116,6 +116,18 @@ end
 --- @return ShortcutSlotPosition|nil
 function ShortcutSlots:get_position_of(name)
   return self.name_to_position[name]
+end
+
+--- @param position ShortcutSlotPosition
+--- @return boolean
+function ShortcutSlots:is_visible_position(position)
+  return position:sub(1, 1) == "v"
+end
+
+--- @param position ShortcutSlotPosition
+--- @return boolean
+function ShortcutSlots:is_hidden_position(position)
+  return position:sub(1, 1) == "h"
 end
 
 --- @param from_position ShortcutSlotPosition

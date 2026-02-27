@@ -8,8 +8,33 @@ local ShortcutDict = {}
 --- @field icon SpritePath
 --- @field style ShortcutStyle
 --- @field item_name string
+--- @field toggleable boolean
+--- @field is_modded boolean
 
 --- @alias ShortcutDict table<ShortcutName, ShortcutDictEntry>
+
+--- @type table<ShortcutName, boolean>
+local BASE_SHORTCUTS = {
+  ["toggle-alt-mode"] = true,
+  ["undo"] = true,
+  ["redo"] = true,
+  ["copy"] = true,
+  ["cut"] = true,
+  ["paste"] = true,
+  ["import-string"] = true,
+  ["give-blueprint"] = true,
+  ["give-blueprint-book"] = true,
+  ["give-deconstruction-planner"] = true,
+  ["give-upgrade-planner"] = true,
+  ["toggle-personal-roboport"] = true,
+  ["toggle-equipment-movement-bonus"] = true,
+  ["give-copper-wire"] = true,
+  ["give-red-wire"] = true,
+  ["give-green-wire"] = true,
+  ["give-spidertron-remote"] = true,
+  ["give-discharge-defense-remote"] = true,
+  ["give-artillery-targeting-remote"] = true,
+}
 
 --- @type ShortcutDict|nil
 local dict = nil
@@ -21,7 +46,7 @@ local dict = nil
 --- Stage: runtime
 ---
 --- @return ShortcutDict
-function ShortcutDict.get_from_prototypes()
+function ShortcutDict.get_all()
   if not dict then
     dict = {}
 
@@ -38,11 +63,23 @@ function ShortcutDict.get_from_prototypes()
           icon = "item/" .. item_name,
           style = shortcut.style or "default",
           item_name = item_name,
+          toggleable = shortcut.toggleable or false,
+          is_modded = not BASE_SHORTCUTS[shortcut.name],
         }
       end
     end
   end
   return dict
+end
+
+--- Get a shortcut entry by name.
+---
+--- Stage: runtime
+---
+--- @param name ShortcutName
+--- @return ShortcutDictEntry|nil
+function ShortcutDict.get(name)
+  return ShortcutDict.get_all()[name]
 end
 
 return ShortcutDict

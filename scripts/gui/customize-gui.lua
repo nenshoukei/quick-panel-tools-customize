@@ -9,9 +9,6 @@ local ShortcutEditor = require("scripts.gui.shortcut-editor")
 --- @field customization Customization
 --- @field editor ShortcutEditor
 --- @field window LuaGuiElement|nil
---- @field editor_container LuaGuiElement|nil
---- @field json_text_box LuaGuiElement|nil
---- @field json_text string|nil
 local CustomizeGui = GuiComponent.define("CustomizeGui")
 
 local TAB_CUSTOMIZE = 1
@@ -37,14 +34,10 @@ function CustomizeGui:destroy()
   if self.window then
     self.editor:destroy()
 
-    self.editor_container = nil
-    self.json_text_box = nil
-    self.json_text = nil
-
     if self.player.opened == self.window then
       self.player.opened = nil
     end
-    if self.window.valid then
+    if self.window and self.window.valid then
       self.window.destroy()
     end
     self.window = nil
@@ -77,6 +70,7 @@ function CustomizeGui:focus()
     self.window.bring_to_front()
     self.window.force_auto_center()
     self.player.opened = self.window
+    self.window.focus()
   end
 end
 
@@ -124,6 +118,7 @@ function CustomizeGui:render()
   })
   local customize_content = tabbed_pane.add({
     type = "flow",
+    name = "customize_content",
     direction = "vertical",
     style = consts.name("tab-content"),
   })
@@ -137,6 +132,7 @@ function CustomizeGui:render()
   })
   local json_content = tabbed_pane.add({
     type = "flow",
+    name = "json_content",
     direction = "vertical",
     style = consts.name("tab-content"),
   })
@@ -145,10 +141,12 @@ function CustomizeGui:render()
   GuiParts.paragraphs(json_content, {
     consts.str("json-description-1"),
     consts.str("json-description-2"),
+    consts.str("json-description-3"),
   })
 
   local json_text_box = json_content.add({
     type = "text-box",
+    name = "json_text_box",
     text = "",
     style = consts.name("json-text-box"),
     game_controller_interaction = defines.game_controller_interaction.always,
@@ -181,9 +179,6 @@ function CustomizeGui:render()
   })
 
   self.window = window
-  self.editor_container = customize_content
-  self.json_text_box = json_text_box
-  self.json_text = ""
 end
 
 function CustomizeGui:update()
@@ -196,21 +191,25 @@ function CustomizeGui:update()
   end
 end
 
+function CustomizeGui:get_tabbed_pane()
+  return self.window.content_frame.tabbed_pane
+end
+
+function CustomizeGui:get_json_text_box()
+  return self:get_tabbed_pane().json_content.json_text_box
+end
+
 function CustomizeGui:update_json_text_box()
-  if not self.json_text_box then return end
-
   local customization = self.editor:get_customization()
-
-  self.json_text = Customization.to_json(customization)
-  self.json_text_box.text = self.json_text
+  self:get_json_text_box().text = Customization.to_json(customization)
 end
 
 function CustomizeGui:update_footer()
   if not self.window then return end
+  local selected_tab = self:get_tabbed_pane().selected_tab_index or TAB_CUSTOMIZE
   local footer = self.window.footer
-  local selected_tab_index = self.window.content_frame.tabbed_pane.selected_tab_index
-  footer.customize_button.visible = selected_tab_index == TAB_JSON
-  footer.view_json_button.visible = selected_tab_index == TAB_CUSTOMIZE
+  footer.customize_button.visible = selected_tab == TAB_JSON
+  footer.view_json_button.visible = selected_tab == TAB_CUSTOMIZE
 end
 
 --- @param event EventData.on_gui_selected_tab_changed
@@ -223,15 +222,19 @@ end
 
 --- @param event EventData.on_gui_click
 function CustomizeGui:handle_customize_button_clicked(event)
-  self.window.content_frame.tabbed_pane.selected_tab_index = TAB_CUSTOMIZE
+  self:get_tabbed_pane().selected_tab_index = TAB_CUSTOMIZE
   self:update_footer()
 end
 
 --- @param event EventData.on_gui_click
 function CustomizeGui:handle_view_json_button_clicked(event)
-  self.window.content_frame.tabbed_pane.selected_tab_index = TAB_JSON
+  self:get_tabbed_pane().selected_tab_index = TAB_JSON
   self:update_json_text_box()
   self:update_footer()
+
+  local text_box = self:get_json_text_box()
+  text_box.focus()
+  text_box.select_all()
 end
 
 --- @param event EventData.on_gui_click

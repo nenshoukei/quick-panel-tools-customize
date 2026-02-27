@@ -25,6 +25,7 @@ local function store_shortcut(shortcut)
   shortcut_list[#shortcut_list + 1] = {
     name = shortcut.name,
     style = shortcut.style,
+    toggleable = shortcut.toggleable,
   }
   stored_shortcuts[shortcut.name] = true
 

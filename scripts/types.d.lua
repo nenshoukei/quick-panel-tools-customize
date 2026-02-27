@@ -7,6 +7,7 @@
 --- @class ShortcutListModDataItem
 --- @field name ShortcutName
 --- @field style ShortcutStyle?
+--- @field toggleable boolean?
 
 --- @class ShortcutListModData
 --- @field shortcut_list ShortcutListModDataItem[]
