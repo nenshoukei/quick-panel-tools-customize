@@ -64,3 +64,22 @@ Based on Lua 5.2.1
 - Use `scripts/utils.lua` to define pure lua utility functions that are used across the mod.
 - Use `scripts/types.d.lua` to define types. This file should only contain type definitions and should not contain any executable code.
 - Use `scripts/lib/gui-component.lua` to define GUI component classes.
+
+### Directory Structure
+
+- `locale/` - Localization files.
+- `resources/` - Resource files such as images, sounds, etc.
+- `scripts/` - Lua scripts.
+  - `control/` - Runtime control scripts used by `control.lua`.
+  - `gui/` - GUI components and helpers.
+  - `lib/` - Shared libraries and utilities.
+  - `prototypes/` - Prototype definitions for Prototype stage. One type, one file.
+- `tests/` - Unit tests.
+
+### Testing
+
+- Use `tests/` directory for unit test files.
+- Test files should follow the naming convention: `test-*.lua`.
+- Use `script.on_event(defines.events.on_tick)` for test execution in development.
+- Write unit tests for utility functions in `scripts/utils.lua`.
+- No integration tests are needed.
