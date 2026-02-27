@@ -10,5 +10,6 @@ data:extend({
     icon_size = 32,
     small_icon = consts.resource("open-gui-x24.png"),
     small_icon_size = 24,
+    associated_control_input = consts.OPEN_GUI_CUSTOM_INPUT_NAME,
   },
 })

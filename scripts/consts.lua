@@ -34,6 +34,7 @@ local consts = {
   SHORTCUT_LIST_DATA_NAME = name("shortcut-list"),
   PLACEHOLDER_SHORTCUT_NAME_PREFIX = name("placeholder-"),
   OPEN_GUI_SHORTCUT_NAME = name("open-customize-gui"),
+  OPEN_GUI_CUSTOM_INPUT_NAME = name("open-customize-gui"),
   CUSTOMIZE_JSON_SETTING_NAME = name("customize-json"),
 }
 

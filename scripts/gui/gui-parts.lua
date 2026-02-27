@@ -4,12 +4,13 @@ local GuiParts = {}
 
 --- @param player LuaPlayer
 --- @param name string
+--- @param options { style: string? }?
 --- @return LuaGuiElement
-function GuiParts.window(player, name)
+function GuiParts.window(player, name, options)
   local window = player.gui.screen.add({
     type = "frame",
     name = name,
-    style = consts.name("window"),
+    style = options and options.style or consts.name("window"),
     direction = "vertical",
   })
   window.style.maximal_height = math.floor(player.display_resolution.height * 0.8)
@@ -19,13 +20,13 @@ end
 
 --- @param window LuaGuiElement
 --- @param title LocalisedString
---- @param options { name: string? }?
+--- @param options { name: string?, style: string? }?
 --- @return LuaGuiElement
 function GuiParts.titlebar(window, title, options)
   local titlebar = window.add({
     type = "flow",
     name = options and options.name,
-    style = consts.name("titlebar"),
+    style = options and options.style or consts.name("titlebar"),
     direction = "horizontal",
   })
   titlebar.drag_target = window
@@ -44,13 +45,13 @@ function GuiParts.titlebar(window, title, options)
 end
 
 --- @param titlebar LuaGuiElement
---- @param options { name: string? }?
+--- @param options { name: string?, style: string? }?
 --- @return LuaGuiElement
 function GuiParts.close_button(titlebar, options)
   return titlebar.add({
     type = "sprite-button",
     name = options and options.name,
-    style = "frame_action_button",
+    style = options and options.style or "frame_action_button",
     sprite = "utility/close",
     hovered_sprite = "utility/close_black",
     clicked_sprite = "utility/close_black",
@@ -60,13 +61,13 @@ function GuiParts.close_button(titlebar, options)
 end
 
 --- @param window LuaGuiElement
---- @param options { name: string? }?
+--- @param options { name: string?, style: string? }?
 --- @return LuaGuiElement
 function GuiParts.footer(window, options)
   local footer = window.add({
     type = "flow",
     name = options and options.name,
-    style = consts.name("footer"),
+    style = options and options.style or consts.name("footer"),
     direction = "horizontal",
   })
   footer.drag_target = window
@@ -74,13 +75,13 @@ function GuiParts.footer(window, options)
 end
 
 --- @param footer LuaGuiElement
---- @param options { name: string? }?
+--- @param options { name: string?, style: string? }?
 --- @return LuaGuiElement
 function GuiParts.footer_drag_handle(footer, options)
   return footer.add({
     type = "empty-widget",
     name = options and options.name,
-    style = consts.name("footer-drag-handle"),
+    style = options and options.style or consts.name("footer-drag-handle"),
     ignored_by_interaction = true,
   })
 end
@@ -105,14 +106,14 @@ end
 
 --- @param parent LuaGuiElement
 --- @param captions LocalisedString[]
---- @param options { name: string? }?
+--- @param options { name: string?, style: string? }?
 --- @return LuaGuiElement
 function GuiParts.paragraphs(parent, captions, options)
   local paragraphs = parent.add({
     type = "flow",
     name = options and options.name,
     direction = "vertical",
-    style = consts.name("paragraphs"),
+    style = options and options.style or consts.name("paragraphs"),
   })
 
   for i, caption in ipairs(captions) do

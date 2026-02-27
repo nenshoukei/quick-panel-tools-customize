@@ -31,6 +31,7 @@ styles[consts.name("titlebar-drag-handle")] = {
 styles[consts.name("footer")] = {
   type = "horizontal_flow_style",
   parent = "dialog_buttons_horizontal_flow",
+  horizontally_stretchable = "on",
 }
 styles[consts.name("footer-drag-handle")] = {
   type = "empty_widget_style",
@@ -67,24 +68,40 @@ styles[consts.name("icon-label-icon")] = {
 
 -- CustomizeGui
 
-styles[consts.name("tab-content")] = {
+styles[consts.name("customize-gui-window")] = {
+  type = "frame_style",
+  parent = consts.name("window"),
+}
+
+styles[consts.name("customize-gui-content")] = {
+  type = "frame_style",
+  parent = "inside_deep_frame",
+  vertically_stretchable = "on",
+  horizontally_stretchable = "on",
+}
+
+styles[consts.name("customize-gui-tabbed-pane")] = {
+  type = "tabbed_pane_style",
+  parent = "tabbed_pane",
+  vertically_stretchable = "on",
+  horizontally_stretchable = "on",
+}
+
+styles[consts.name("customize-gui-tab-content")] = {
   type = "vertical_flow_style",
   left_padding = 12,
   right_padding = 12,
   bottom_padding = 12,
+  vertically_stretchable = "on",
+  horizontally_stretchable = "on",
 }
 
-styles[consts.name("json-content-flow")] = {
-  type = "vertical_flow_style",
-  top_padding = 8,
-  bottom_padding = 8,
-  left_padding = 8,
-  right_padding = 8,
-}
 styles[consts.name("json-text-box")] = {
   type = "textbox_style",
-  width = 400,
+  minimal_width = 500,
   minimal_height = 38,
+  vertically_stretchable = "on",
+  horizontally_stretchable = "on",
 }
 
 -- ShortcutEditor
@@ -93,6 +110,7 @@ styles[consts.name("shortcut-pages")] = {
   type = "table_style",
   vertical_spacing = 12,
   horizontal_spacing = 12,
+  horizontally_stretchable = "on",
 }
 styles[consts.name("shortcut-page")] = {
   type = "frame_style",

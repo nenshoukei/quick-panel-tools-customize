@@ -94,7 +94,9 @@ function CustomizeGui:render()
     window.destroy()
   end
 
-  window = GuiParts.window(self.player, window_name)
+  window = GuiParts.window(self.player, window_name, {
+    style = consts.name("customize-gui-window"),
+  })
   self:listen_to_gui_events(window, {
     [defines.events.on_gui_closed] = self.close,
   })
@@ -108,12 +110,13 @@ function CustomizeGui:render()
   local content_frame = window.add({
     type = "frame",
     name = "content_frame",
-    style = "inside_deep_frame",
+    style = consts.name("customize-gui-content"),
   })
 
   local tabbed_pane = content_frame.add({
     type = "tabbed-pane",
     name = "tabbed_pane",
+    style = consts.name("customize-gui-tabbed-pane"),
   })
   self:listen_to_gui_events(tabbed_pane, {
     [defines.events.on_gui_selected_tab_changed] = self.handle_tab_changed,
@@ -127,7 +130,7 @@ function CustomizeGui:render()
     type = "flow",
     name = "customize_content",
     direction = "vertical",
-    style = consts.name("tab-content"),
+    style = consts.name("customize-gui-tab-content"),
   })
   tabbed_pane.add_tab(customize_tab, customize_content)
 
@@ -141,7 +144,7 @@ function CustomizeGui:render()
     type = "flow",
     name = "json_content",
     direction = "vertical",
-    style = consts.name("tab-content"),
+    style = consts.name("customize-gui-tab-content"),
   })
   tabbed_pane.add_tab(json_tab, json_content)
 
@@ -159,6 +162,7 @@ function CustomizeGui:render()
     game_controller_interaction = defines.game_controller_interaction.always,
   })
   json_text_box.read_only = true
+  json_text_box.word_wrap = true
   self:listen_to_gui_events(json_text_box, {
     [defines.events.on_gui_click] = self.handle_json_text_box_clicked,
   })

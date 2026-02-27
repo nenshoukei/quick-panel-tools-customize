@@ -79,7 +79,7 @@ CustomizeGuiControl.events = {
   end,
 
   --- @param event EventData.CustomInputEvent
-  [consts.name("customize-gui")] = function (event)
+  [consts.OPEN_GUI_CUSTOM_INPUT_NAME] = function (event)
     CustomizeGuiControl.toggle_customize_gui(event.player_index)
   end,
 }
