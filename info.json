@@ -5,5 +5,5 @@
   "author": "mokkosu55",
   "factorio_version": "2.0",
   "dependencies": ["base >= 2.0"],
-  "description": "Customize Tools tab in Quick Panel (only for controller)."
+  "description": "Customize Tools tab in Quick Panel (only for controller users). Keep your favorite tools always same position!"
 }

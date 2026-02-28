@@ -31,6 +31,27 @@ TL;DR: Open Customize GUI on tools, customize, copy JSON, and paste it to mod St
 12. `Confirm` to proceed.
 13. Load the game, and enjoy!
 
+## Compatibility
+
+This mod uses a bit _hacky_ way to customize the tools tab since Factorio does not provide ways to hide tools.
+
+If you hide a tool, this mod will remove it from the game on startup. (Don't worry, it's restored if you unhide it)
+
+So any other mod trying to modify that hidden tool during the game will throw an error.
+
+Normally, a mod only modifies a tool to toggle it, or enable/disable it. Therefore, toggle tools cannot be hidden on Customize GUI for safety, but it is still possible to throw an error if a mod to enable/disable hidden tools. So, it is not recommended to hide modded tools.
+
+If error occurs, you have to reset your Customize JSON on Startup settings. Sorry for inconvenience.
+
+### Technical Details
+
+- On startup:
+  - This mod overrides `ShortcutPrototype.order` to sort shortcuts (tools) by order.
+  - This mod inserts a dummy shortcut as a placeholder to maintain the order of shortcuts.
+  - To hide a shortcut, this mod removes its `ShortcutPrototype` by setting `data.raw["shortcut"][name] = nil`.
+  - This mod sets a metatable to `data.raw["shortcut"]` to return a virtual `ShortcutPrototype` for removed keys.
+  - Also, the metatable is used to detect a new shortcut added by other mods later.
+
 ## License
 
 [The MIT License](LICENSE.md)
