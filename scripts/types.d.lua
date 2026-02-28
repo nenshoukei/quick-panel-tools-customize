@@ -11,4 +11,3 @@
 
 --- @class ShortcutListModData
 --- @field shortcut_list ShortcutListModDataItem[]
---- @field placeholder_indexes number[]

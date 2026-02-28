@@ -36,10 +36,11 @@ end
 --- @param player LuaPlayer
 function CustomizeGuiControl.update_placeholders(player)
   -- Make placeholder shortcuts unavailable
-  local mod_data = prototypes.mod_data[consts.SHORTCUT_LIST_DATA_NAME]
-  local shortcut_list_data = assert(mod_data and mod_data.data, "mod-data not found") --[[@as ShortcutListModData]]
-  for _, index in ipairs(shortcut_list_data.placeholder_indexes) do
-    player.set_shortcut_available(consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. index, false)
+  local placeholder_subgroup = prototypes.item_subgroup[consts.PLACEHOLDER_SUBGROUP_NAME]
+  for name, shortcut in pairs(prototypes.shortcut) do
+    if shortcut.subgroup == placeholder_subgroup then
+      player.set_shortcut_available(name, false)
+    end
   end
 end
 

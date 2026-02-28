@@ -1,3 +1,4 @@
+local utils = require("scripts.utils")
 local consts = require("scripts.consts")
 local Customization = require("scripts.lib.customization")
 
@@ -6,7 +7,6 @@ local Customization = require("scripts.lib.customization")
 --- @type ShortcutListModData
 local mod_data = {
   shortcut_list = {},
-  placeholder_indexes = {},
 }
 data:extend({
   {
@@ -16,7 +16,6 @@ data:extend({
   },
 })
 local shortcut_list = mod_data.shortcut_list
-local placeholder_indexes = mod_data.placeholder_indexes
 
 --- To remove shortcuts, we have to do `data.raw["shortcuts"][name] = nil`.
 --- (`hidden` property is ignored on Quick Panel)
@@ -56,23 +55,11 @@ local function store_shortcut(shortcut)
   })
 end
 
---- @type table<string, number> Value is index. `-1` means removed.
-local customized_shortcuts = {}
-
---- Just for scoping local variables
-do
-  --- Load the customization from startup settings
-  local customization = Customization.from_settings()
-
-  --- Placeholder shortcuts for data:extend() later
-  --- @type data.ShortcutPrototype[]
-  local placeholders = {}
-
-  for i, name in ipairs(customization.shortcuts) do
-    if name == "" then
-      -- Insert a placeholder shortcut
-      placeholder_indexes[#placeholder_indexes + 1] = i
-      placeholders[#placeholders + 1] = {
+local function fill_gaps_with_placeholders(from_index, until_index)
+  for i = from_index, until_index do
+    -- Placeholder shortcut that does nothing, always disabled
+    data:extend({
+      {
         type = "shortcut",
         name = consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. i,
         localised_name = "",
@@ -83,39 +70,65 @@ do
         icon_size = 32,
         small_icon = consts.resource("blank-x24.png"),
         small_icon_size = 24,
-      }
+        subgroup = consts.PLACEHOLDER_SUBGROUP_NAME,
+      },
+    })
+  end
+end
+
+local function remove_placeholder(index)
+  rawset(data.raw["shortcut"], consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX .. index, nil)
+end
+
+--- @type table<string, number> Value is index. `-1` means removed.
+local customized_indexes = {}
+local last_customized_index = 0
+
+--- Just for scoping local variables
+do
+  --- Load the customization from startup settings
+  local customization = Customization.from_settings()
+
+  local shortcut_prototypes = data.raw["shortcut"]
+  local new_shortcuts = utils.table_shallow_copy(shortcut_prototypes)
+
+  for i, name in ipairs(customization.shortcuts) do
+    if name == "" then
+      -- Placeholder. We don't make them until they are needed, so that trailing placeholders are not created.
     else
-      -- Set order to defined shortcut prototype
-      customized_shortcuts[name] = i
-      local shortcut = data.raw["shortcut"][name]
+      customized_indexes[name] = i
+
+      local shortcut = shortcut_prototypes[name]
       if shortcut then
+        -- Shortcut is defined. Set order and create placeholders if needed
+        fill_gaps_with_placeholders(last_customized_index + 1, i - 1)
+        last_customized_index = i
+
         shortcut.order = ("%010d"):format(i)
         store_shortcut(shortcut)
+        new_shortcuts[name] = nil
       end
     end
   end
 
-  for i, name in ipairs(customization.hidden_shortcuts) do
-    customized_shortcuts[name] = -1
-    local shortcut = data.raw["shortcut"][name]
+  for _, name in ipairs(customization.hidden_shortcuts) do
+    customized_indexes[name] = -1
+    local shortcut = shortcut_prototypes[name]
     if shortcut then
       store_shortcut(shortcut)
       removed_shortcuts[name] = shortcut
 
       -- Remove the shortcut!
-      data.raw["shortcut"][shortcut.name] = nil
+      shortcut_prototypes[shortcut.name] = nil
+      new_shortcuts[shortcut.name] = nil
     end
   end
 
-  for name, shortcut in pairs(data.raw["shortcut"]) do
-    if not customized_shortcuts[name] then
-      -- New shortcuts should always be after customized shortcuts
-      shortcut.order = "NEW__" .. (shortcut.order or "")
-      store_shortcut(shortcut)
-    end
+  for _, shortcut in pairs(new_shortcuts) do
+    -- New shortcuts should always be after customized shortcuts
+    shortcut.order = "NEW__" .. (shortcut.order or "")
+    store_shortcut(shortcut)
   end
-
-  data:extend(placeholders)
 end
 
 --- Hook data.raw["shortcut"]
@@ -146,13 +159,19 @@ do
   metatable.__newindex = function (self, key, value)
     if value then
       -- New shortcut prototype is defined
-      local index = customized_shortcuts[key]
+      local index = customized_indexes[key]
       if index == -1 then
         -- Shortcut is removed
         removed_shortcuts[key] = value
         return
       elseif index then
         -- Shortcut is customized
+        if index > last_customized_index then
+          fill_gaps_with_placeholders(last_customized_index + 1, index - 1)
+          last_customized_index = index
+        else
+          remove_placeholder(index)
+        end
         value.order = ("%010d"):format(index)
       else
         -- Shortcut is not customized
