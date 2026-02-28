@@ -3,5 +3,9 @@
   "emmylua.lint.spellCheck": false,
   "[lua]": {
     "editor.defaultFormatter": "CppCXY.emmylua-codestyle"
-  }
+  },
+  "Lua.workspace.library": [
+    "${addons}/busted/module/library",
+    "${3rd}/luassert/library"
+  ]
 }
