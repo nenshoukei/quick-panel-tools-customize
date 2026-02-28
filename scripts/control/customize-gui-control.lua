@@ -19,26 +19,26 @@ end
 
 --- @param event ConfigurationChangedData
 function CustomizeGuiControl.on_configuration_changed(event)
-  if event.mod_startup_settings_changed then
-    -- Startup Settings changed, so we rebuild Customization from it
-    local customization = Customization.from_settings()
-    for _, customize_gui in pairs(storage.customize_guis) do
-      customize_gui:set_customization(customization)
-    end
+  -- Startup settings or prototype definitions changed
+  -- Rebuild Customization from settings
+  local customization = Customization.from_settings()
+  for _, customize_gui in pairs(storage.customize_guis) do
+    customize_gui:set_customization(customization)
+  end
 
-    -- Update placeholders for all players
-    for _, player in pairs(game.players) do
-      CustomizeGuiControl.update_placeholders(player)
-    end
+  -- Update placeholders for all players
+  for _, player in pairs(game.players) do
+    CustomizeGuiControl.update_placeholders(player)
   end
 end
 
 --- @param player LuaPlayer
 function CustomizeGuiControl.update_placeholders(player)
   -- Make placeholder shortcuts unavailable
-  local placeholder_subgroup = prototypes.item_subgroup[consts.PLACEHOLDER_SUBGROUP_NAME]
+  local prefix = consts.PLACEHOLDER_SHORTCUT_NAME_PREFIX
+  local prefix_len = #prefix
   for name, shortcut in pairs(prototypes.shortcut) do
-    if shortcut.subgroup == placeholder_subgroup then
+    if shortcut.localised_name == "" and name:sub(1, prefix_len) == prefix then
       player.set_shortcut_available(name, false)
     end
   end

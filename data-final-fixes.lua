@@ -70,7 +70,6 @@ local function fill_gaps_with_placeholders(from_index, until_index)
         icon_size = 32,
         small_icon = consts.resource("blank-x24.png"),
         small_icon_size = 24,
-        subgroup = consts.PLACEHOLDER_SUBGROUP_NAME,
       },
     })
   end
@@ -105,6 +104,7 @@ do
         last_customized_index = i
 
         shortcut.order = ("%010d"):format(i)
+        shortcut.subgroup = nil -- subgroup makes sorting not work as expected
         store_shortcut(shortcut)
         new_shortcuts[name] = nil
       end
@@ -127,6 +127,7 @@ do
   for _, shortcut in pairs(new_shortcuts) do
     -- New shortcuts should always be after customized shortcuts
     shortcut.order = "NEW__" .. (shortcut.order or "")
+    shortcut.subgroup = nil
     store_shortcut(shortcut)
   end
 end
@@ -173,9 +174,11 @@ do
           remove_placeholder(index)
         end
         value.order = ("%010d"):format(index)
+        value.subgroup = nil
       else
         -- Shortcut is not customized
         value.order = "NEW__" .. (value.order or "")
+        value.subgroup = nil
       end
       store_shortcut(value)
     end

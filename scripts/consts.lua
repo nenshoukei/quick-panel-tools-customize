@@ -38,7 +38,6 @@ local consts = {
   SHORTCUT_ITEM_SUBGROUP_NAME = name("shortcut"),
   SHORTCUT_ITEM_NAME_PREFIX = name("shortcut-"),
   SHORTCUT_LIST_DATA_NAME = name("shortcut-list"),
-  PLACEHOLDER_SUBGROUP_NAME = name("shortcut-placeholder"),
   PLACEHOLDER_SHORTCUT_NAME_PREFIX = name("placeholder-"),
   OPEN_GUI_SHORTCUT_NAME = name("open-customize-gui"),
   OPEN_GUI_CUSTOM_INPUT_NAME = name("open-customize-gui"),
