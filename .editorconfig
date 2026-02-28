@@ -174,3 +174,8 @@ end_statement_with_semicolon = same_line
 trim_trailing_whitespace = false
 indent_style = space
 indent_size = 4
+
+[*.txt]
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
