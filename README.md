@@ -25,11 +25,13 @@ Because tools tab cannot be modified in-game, you need to change Mod Startup set
 4. Customize tools as you wish.
 5. Click `JSON` button to see Customize JSON.
 6. Copy the Customize JSON.
+    - On Steam Deck: Press `L4` on selected text, the back side left-top button, which is assigned to `Ctrl + C` by default keymap.
 7. Close the Customize GUI.
 8. Save the game, and exit to the Factorio title screen.
 9. Open `Settings` → `Mod settings`.
 10. On Startup tab, find `Quick Panel Tools Customize`.
 11. Paste the Customize JSON into `Customize JSON` textbox.
+    - On Steam Deck: `Paste` button is on the keyboard in right-bottom.
 12. `Confirm` to proceed. Factorio will restart.
 13. Load the game. Factorio shows Confirmation, click `Load` to proceed.
 14. and enjoy!
@@ -49,11 +51,11 @@ If error occurs, you have to reset your Customize JSON on Startup settings. Sorr
 ### Technical Details
 
 - On startup:
-  - This mod overrides `ShortcutPrototype.order` to sort shortcuts (tools) by order.
-  - This mod inserts a dummy shortcut as a placeholder to maintain the order of shortcuts.
-  - To hide a shortcut, this mod removes its `ShortcutPrototype` by setting `data.raw["shortcut"][name] = nil`.
-  - This mod sets a metatable to `data.raw["shortcut"]` to return a virtual `ShortcutPrototype` for removed keys.
-  - Also, the metatable is used to detect a new shortcut added by other mods later.
+    - This mod overrides `ShortcutPrototype.order` to sort shortcuts (tools) by order.
+    - This mod inserts a dummy shortcut as a placeholder to maintain the order of shortcuts.
+    - To hide a shortcut, this mod removes its `ShortcutPrototype` by setting `data.raw["shortcut"][name] = nil`.
+    - This mod sets a metatable to `data.raw["shortcut"]` to return a virtual `ShortcutPrototype` for removed keys.
+    - Also, the metatable is used to detect a new shortcut added by other mods later.
 
 ## License
 
