@@ -9,11 +9,13 @@ FILES_TO_INCLUDE=(
     "info.json"
     "changelog.txt"
     "thumbnail.png"
-    "locale/"
-    "resources/"
-    "scripts/"
+    "locale"
+    "resources"
+    "scripts"
     *.lua
 )
+
+cd "$(dirname "$0")"
 
 # Get mod info from info.json
 if ! command -v jq &> /dev/null; then
@@ -43,7 +45,7 @@ RELEASE_DIR="release"
 mkdir -p "$RELEASE_DIR"
 
 ZIP_NAME="${MOD_NAME}-${VERSION}.zip"
-ZIP_PATH="$RELEASE_DIR/$ZIP_NAME"
+ZIP_PATH="$(pwd)/$RELEASE_DIR/$ZIP_NAME"
 
 # Remove existing zip if it exists
 if [[ -f "$ZIP_PATH" ]]; then
@@ -69,26 +71,35 @@ if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
     exit 1
 fi
 
-# Create zip directly
+# Create zip with proper directory structure
 echo "Creating $ZIP_NAME..."
-cd "$(dirname "$0")"
 
-# Add files to zip
-echo "Adding files to zip..."
+# Create temp directory for mod structure
+TEMP_DIR=$(mktemp -d)
+MOD_DIR="$TEMP_DIR/$MOD_NAME"
+mkdir -p "$MOD_DIR"
+
+# Copy files to temp directory
+echo "Copying files to temp directory..."
+
 for file in "${FILES_TO_INCLUDE[@]}"; do
-    echo "  Including: $file"
-    # Add file/directory, excluding .DS_Store files
-    if [[ -d "$file" ]]; then
-        # For directories, use find to exclude .DS_Store
-        find "$file" -name ".DS_Store" -prune -o -print | zip -q "$ZIP_PATH" -@
-    else
-        # For single files, check if it's not .DS_Store
-        if [[ "$(basename "$file")" != ".DS_Store" ]]; then
-            zip -q "$ZIP_PATH" "$file"
-        fi
-    fi
+    echo "  Copying: $file"
+    cp -R -p "$file" "$MOD_DIR/"
 done
 
-echo "✅ Release zip created: $ZIP_PATH"
+# Remove .DS_Store files
+find "$MOD_DIR" -name ".DS_Store" -delete
+
+# Create zip from temp directory
+echo "Creating zip from temp directory..."
+cd "$TEMP_DIR"
+zip -q -r "$ZIP_PATH" "$MOD_NAME"
+cd - > /dev/null
+
+# Clean up temp directory
+# rm -rf "$TEMP_DIR"
+echo "$TEMP_DIR"
+
+echo "✅ Release zip created: $ZIP_NAME"
 echo "📦 Size: $(du -h "$ZIP_PATH" | cut -f1)"
 echo "🚀 Ready for upload to Factorio mod portal!"
