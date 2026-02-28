@@ -12,10 +12,7 @@ FILES_TO_INCLUDE=(
     "locale/"
     "resources/"
     "scripts/"
-    "control.lua"
-    "data.lua"
-    "data-final-fixes.lua"
-    "settings.lua"
+    "*.lua"
 )
 
 # Get mod info from info.json

@@ -58,5 +58,4 @@ Date: 24. 12. 2012
 
 - Create migration scripts in `migrations/` directory.
 - Name migration files with version numbers: `migration-1.0.0.lua`.
-- Test migrations on save files from previous versions.
 - Use `script.on_configuration_changed()` for non-destructive updates.

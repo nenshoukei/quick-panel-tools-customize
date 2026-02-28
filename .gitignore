@@ -1,6 +1,2 @@
 .vscode/settings.json
 /release
-/luarocks
-/lua
-/lua_modules
-/.luarocks
