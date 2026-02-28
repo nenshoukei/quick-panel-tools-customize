@@ -17,8 +17,10 @@ Ever feel "I want to install a new mod, but it adds a new tool... It pushes ever
 
 TL;DR: Open Customize GUI on tools, customize, copy JSON, and paste it to mod Startup settings.
 
-1. Install the mod.
-2. Start a new game, or load a game.
+Because tools tab cannot be modified in-game, you need to change Mod Startup settings on Factorio title screen.
+
+1. Install this mod.
+2. Load a game, or start a new game.
 3. Open Customize GUI on Tools tab in Quick Panel.
 4. Customize tools as you wish.
 5. Click `JSON` button to see Customize JSON.
@@ -28,8 +30,9 @@ TL;DR: Open Customize GUI on tools, customize, copy JSON, and paste it to mod St
 9. Open `Settings` → `Mod settings`.
 10. On Startup tab, find `Quick Panel Tools Customize`.
 11. Paste the Customize JSON into `Customize JSON` textbox.
-12. `Confirm` to proceed.
-13. Load the game, and enjoy!
+12. `Confirm` to proceed. Factorio will restart.
+13. Load the game. Factorio shows Confirmation, click `Load` to proceed.
+14. and enjoy!
 
 ## Compatibility
 
