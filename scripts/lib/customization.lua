@@ -31,10 +31,10 @@ function Customization.from_json(json_string)
   if type(parsed) ~= "table" then
     return nil
   end
-  if not utils.is_array(parsed.s) then
+  if type(parsed.s) ~= "table" then
     return nil
   end
-  if not utils.is_array(parsed.h) then
+  if type(parsed.h) ~= "table" then
     return nil
   end
 
