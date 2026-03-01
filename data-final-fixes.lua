@@ -92,9 +92,8 @@ do
   local new_shortcuts = utils.table_shallow_copy(shortcut_prototypes)
 
   for i, name in ipairs(customization.shortcuts) do
-    if name == "" then
-      -- Placeholder. We don't make them until they are needed, so that trailing placeholders are not created.
-    else
+    -- Skipping placeholders. We don't make them until they are needed, so that trailing placeholders are not created.
+    if name ~= "" then
       customized_indexes[name] = i
 
       local shortcut = shortcut_prototypes[name]

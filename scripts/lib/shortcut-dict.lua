@@ -1,5 +1,4 @@
 local consts = require("scripts.consts")
-local utils = require("scripts.utils")
 
 local ShortcutDict = {}
 
