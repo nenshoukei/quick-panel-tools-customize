@@ -59,6 +59,22 @@ If error occurs, you have to reset your Customize JSON on Startup settings. Sorr
     - This mod sets a metatable to `data.raw["shortcut"]` to return a virtual `ShortcutPrototype` for removed keys.
     - Also, the metatable is used to detect a new shortcut added by other mods later.
 
+## Development
+
+Required: `lua`, `luarocks`
+
+To install dependencies:
+
+```bash
+make dev
+```
+
+To lint:
+
+```bash
+make lint
+```
+
 ## License
 
 [The MIT License](LICENSE.md)
