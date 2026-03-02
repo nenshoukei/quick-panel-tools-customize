@@ -97,7 +97,7 @@ zip -q -r "$ZIP_PATH" "$MOD_NAME"
 cd - > /dev/null
 
 # Clean up temp directory
-# rm -rf "$TEMP_DIR"
+rm -rf "$TEMP_DIR"
 echo "$TEMP_DIR"
 
 echo "✅ Release zip created: $ZIP_NAME"

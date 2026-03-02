@@ -1,8 +1,10 @@
-.PHONY: dev lint
+.PHONY: dev lint release
 
 dev:
 	luarocks install luacheck
-	wget -O .luacheckrc https://raw.githubusercontent.com/Nexela/Factorio-luacheckrc/0.17/.luacheckrc
 
 lint:
 	luacheck .
+
+release:
+	./make-release-zip.sh

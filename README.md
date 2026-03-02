@@ -75,6 +75,12 @@ To lint:
 make lint
 ```
 
+To create a release zip:
+
+```bash
+make release
+```
+
 ## License
 
 [The MIT License](LICENSE.md)
