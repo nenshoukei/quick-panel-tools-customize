@@ -64,7 +64,6 @@ Based on Lua 5.2.1
 - Use `scripts/utils.lua` to define pure lua utility functions that are used across the mod.
 - Use `scripts/types.d.lua` to define types. This file should only contain type definitions and should not contain any executable code.
 - Use `scripts/lib/gui-component.lua` to define GUI component classes.
-- No tests are needed, because it heavily depends on Factorio's internal implementation including Lua runtime.
 
 ### Directory Structure
 
@@ -75,3 +74,11 @@ Based on Lua 5.2.1
     - `runtime/` - For Runtime stage.
     - `settings/` - For Settings stage.
     - `shared/` - Shared scripts used by multiple stages.
+- `spec/` - Unit tests.
+
+### Testing
+
+- Use `busted` for unit testing.
+- Use `spec/helper.lua` for helper functions.
+- Write tests in `spec/` as `<file_name>_spec.lua`.
+- Run tests with `make test`.
