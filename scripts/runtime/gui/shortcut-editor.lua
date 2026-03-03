@@ -1,9 +1,9 @@
-local consts = require("scripts.consts")
-local utils = require("scripts.utils")
-local GuiComponent = require("scripts.lib.gui-component")
-local ShortcutDict = require("scripts.lib.shortcut-dict")
-local ShortcutSlots = require("scripts.lib.shortcut-slots")
-local GuiParts = require("scripts.gui.gui-parts")
+local consts = require("scripts.shared.consts")
+local TableUtils = require("scripts.shared.table-utils")
+local GuiComponent = require("scripts.runtime.lib.gui-component")
+local ShortcutDict = require("scripts.runtime.lib.shortcut-dict")
+local ShortcutSlots = require("scripts.runtime.lib.shortcut-slots")
+local GuiParts = require("scripts.runtime.gui.gui-parts")
 
 --- @class ShortcutEditor : GuiComponent
 --- @field player LuaPlayer
@@ -101,10 +101,11 @@ function ShortcutEditor:update_shortcut_slot_button(button, slot)
   end
 
   --- @type ShortcutSlotButtonTags
-  button.tags = utils.table_merge(button.tags, {
+  local new_tags = {
     shortcut_name = slot.name or "",
     slot_position = slot.position,
-  })
+  }
+  button.tags = TableUtils.merge(button.tags, new_tags)
 
   local shortcut = slot.name and ShortcutDict.get(slot.name)
   if shortcut then

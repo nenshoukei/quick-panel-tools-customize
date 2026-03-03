@@ -18,7 +18,7 @@ trigger: always_on
 - Follow semantic versioning for version numbers.
 - Date `Date: ` line is optional. Date format can be any format, but official example uses `24. 12. 2012` format. (`DD. MM. YYYY`)
 - Category `  Category:` line must start with 2 spaces and have a category name. The line ends with a colon.
-  - Some categories are recognized by the game and used for sorting: `Major Features`, `Features`, `Minor Features`, `Graphics`, `Sounds`, `Optimizations`, `Balancing`, `Combat Balancing`, `Circuit Network`, `Changes`, `Bugfixes`, `Modding`, `Scripting`, `Gui`, `Control`, `Translation`, `Debug`, `Ease of use`, `Info`, `Locale`, `Compatibility`
+    - Some categories are recognized by the game and used for sorting: `Major Features`, `Features`, `Minor Features`, `Graphics`, `Sounds`, `Optimizations`, `Balancing`, `Combat Balancing`, `Circuit Network`, `Changes`, `Bugfixes`, `Modding`, `Scripting`, `Gui`, `Control`, `Translation`, `Debug`, `Ease of use`, `Info`, `Locale`, `Compatibility`
 - Entry `   -` line must start with 4 spaces followed by a dash followed by another space.
 - Document breaking changes, new features, and bug fixes.
 

@@ -1,4 +1,4 @@
-local consts = require("scripts.consts")
+local consts = require("scripts.shared.consts")
 
 local styles = data.raw["gui-style"].default
 local slot_size = styles.slot.size

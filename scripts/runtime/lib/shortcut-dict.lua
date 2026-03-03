@@ -1,4 +1,4 @@
-local consts = require("scripts.consts")
+local consts = require("scripts.shared.consts")
 
 local ShortcutDict = {}
 
@@ -46,8 +46,6 @@ local dict = nil
 ---
 --- This function is cached, so calling it multiple times is cheap.
 ---
---- Stage: runtime
----
 --- @return ShortcutDict
 function ShortcutDict.get_all()
   if not dict then
@@ -92,8 +90,6 @@ function ShortcutDict.get_all()
 end
 
 --- Get a shortcut entry by name.
----
---- Stage: runtime
 ---
 --- @param name ShortcutName
 --- @return ShortcutDictEntry|nil

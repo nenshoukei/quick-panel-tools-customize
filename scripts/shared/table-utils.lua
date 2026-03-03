@@ -1,11 +1,11 @@
-local utils = {}
+local TableUtils = {}
 
 --- Shallow copy of a table
 ---
 --- @generic T : table
 --- @param tbl T
 --- @return T
-function utils.table_shallow_copy(tbl)
+function TableUtils.shallow_copy(tbl)
   local result = {}
   for k, v in pairs(tbl) do
     result[k] = v
@@ -18,7 +18,7 @@ end
 --- @param tbl1 table
 --- @param tbl2 table
 --- @return table
-function utils.table_merge(tbl1, tbl2)
+function TableUtils.merge(tbl1, tbl2)
   local result = {}
   for k, v in pairs(tbl1) do
     result[k] = v
@@ -34,7 +34,7 @@ end
 --- @generic K, V
 --- @param tbl table<K, V>
 --- @return K[]
-function utils.table_keys(tbl)
+function TableUtils.keys(tbl)
   local result = {}
   for k, _ in pairs(tbl) do
     result[#result + 1] = k
@@ -47,7 +47,7 @@ end
 --- @generic K, V
 --- @param tbl table<K, V>
 --- @return V[]
-function utils.table_values(tbl)
+function TableUtils.values(tbl)
   local result = {}
   for _, v in pairs(tbl) do
     result[#result + 1] = v
@@ -55,4 +55,4 @@ function utils.table_values(tbl)
   return result
 end
 
-return utils
+return TableUtils

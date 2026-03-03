@@ -1,9 +1,7 @@
---- Stage: runtime
-
-local consts = require("scripts.consts")
-local utils = require("scripts.utils")
-local Event = require("scripts.lib.event")
-local Metatable = require("scripts.lib.metatable")
+local consts = require("scripts.shared.consts")
+local TableUtils = require("scripts.shared.table-utils")
+local Event = require("scripts.runtime.lib.event")
+local Metatable = require("scripts.runtime.lib.metatable")
 
 --- @class GuiComponent
 --- @field component_name string
@@ -113,7 +111,7 @@ end
 function GuiComponent:listen_to_gui_events(element, handler_method_map)
   local handler_map = {}
   local method_name_table = self:_get_method_name_table()
-  local new_tags = utils.table_shallow_copy(element.tags or {})
+  local new_tags = TableUtils.shallow_copy(element.tags or {})
   for event_type, method in pairs(handler_method_map) do
     local method_name = method_name_table[method]
     if not method_name then

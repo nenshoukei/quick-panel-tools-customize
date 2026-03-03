@@ -3,5 +3,6 @@
   "emmylua.lint.spellCheck": false,
   "[lua]": {
     "editor.defaultFormatter": "CppCXY.emmylua-codestyle"
-  }
+  },
+  "Lua.runtime.pathStrict": true
 }

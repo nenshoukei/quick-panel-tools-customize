@@ -1,4 +1,4 @@
-local consts = require("scripts.consts")
+local consts = require("scripts.shared.consts")
 
 local Customization = {}
 
@@ -44,9 +44,6 @@ function Customization.from_json(json_string)
 end
 
 --- Load Customization from settings
----
---- Stage: runtime
----
 --- @return Customization
 function Customization.from_settings()
   local json = settings.startup[consts.CUSTOMIZE_JSON_SETTING_NAME]

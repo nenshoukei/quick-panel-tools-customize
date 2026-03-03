@@ -1,8 +1,6 @@
---- Stage: runtime
-
-local consts = require("scripts.consts")
-local utils = require("scripts.utils")
-local ShortcutDict = require("scripts.lib.shortcut-dict")
+local consts = require("scripts.shared.consts")
+local TableUtils = require("scripts.shared.table-utils")
+local ShortcutDict = require("scripts.runtime.lib.shortcut-dict")
 
 --- @class ShortcutSlots
 --- @field name_to_position table<ShortcutName, ShortcutSlotPosition>
@@ -271,7 +269,7 @@ function ShortcutSlots:get_customization()
   --- @type ShortcutName[]
   local hidden_shortcuts = {}
 
-  local positions = utils.table_keys(self.position_to_name)
+  local positions = TableUtils.keys(self.position_to_name)
   table.sort(positions)
 
   local last_visible_index = 0

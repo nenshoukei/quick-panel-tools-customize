@@ -1,6 +1,6 @@
-local utils = require("scripts.utils")
-local consts = require("scripts.consts")
-local Customization = require("scripts.lib.customization")
+local consts = require("scripts.shared.consts")
+local TableUtils = require("scripts.shared.table-utils")
+local Customization = require("scripts.shared.customization")
 
 --- mod-data for storing all shortcuts including hidden ones
 --- and also for storing fields not provided by LuaGuiPrototype
@@ -89,7 +89,7 @@ do
   local customization = Customization.from_settings()
 
   local shortcut_prototypes = data.raw["shortcut"]
-  local new_shortcuts = utils.table_shallow_copy(shortcut_prototypes)
+  local new_shortcuts = TableUtils.shallow_copy(shortcut_prototypes)
 
   for i, name in ipairs(customization.shortcuts) do
     -- Skipping placeholders. We don't make them until they are needed, so that trailing placeholders are not created.

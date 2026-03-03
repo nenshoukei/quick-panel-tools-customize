@@ -1,8 +1,8 @@
-local consts = require("scripts.consts")
-local Customization = require("scripts.lib.customization")
-local GuiComponent = require("scripts.lib.gui-component")
-local GuiParts = require("scripts.gui.gui-parts")
-local ShortcutEditor = require("scripts.gui.shortcut-editor")
+local consts = require("scripts.shared.consts")
+local Customization = require("scripts.shared.customization")
+local GuiComponent = require("scripts.runtime.lib.gui-component")
+local GuiParts = require("scripts.runtime.gui.gui-parts")
+local ShortcutEditor = require("scripts.runtime.gui.shortcut-editor")
 
 --- @class CustomizeGui : GuiComponent
 --- @field player LuaPlayer

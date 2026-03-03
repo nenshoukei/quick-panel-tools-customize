@@ -1,6 +1,4 @@
---- Stage: runtime
-
-local consts = require("scripts.consts")
+local consts = require("scripts.shared.consts")
 
 --- @class Metatable
 local Metatable = {

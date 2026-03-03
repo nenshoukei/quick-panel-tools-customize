@@ -1,4 +1,4 @@
-local consts = require("scripts.consts")
+local consts = require("scripts.shared.consts")
 
 data:extend({
   {

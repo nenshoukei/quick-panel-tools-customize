@@ -1,6 +1,4 @@
---- Stage: runtime
-
-local Metatable = require("scripts.lib.metatable")
+local Metatable = require("scripts.runtime.lib.metatable")
 
 --- @class Event
 local Event = {}

@@ -1,7 +1,7 @@
 --- @module "__core__.lualib.event_handler"
-local consts = require("scripts.consts")
-local Customization = require("scripts.lib.customization")
-local CustomizeGui = require("scripts.gui.customize-gui")
+local consts = require("scripts.shared.consts")
+local Customization = require("scripts.shared.customization")
+local CustomizeGui = require("scripts.runtime.gui.customize-gui")
 
 --- @class CustomizeGuiControl : event_handler
 local CustomizeGuiControl = {}
