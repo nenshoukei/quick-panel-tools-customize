@@ -2,8 +2,14 @@
   "name": "quick-panel-tools-customize",
   "version": "0.1.1",
   "title": "Quick Panel Tools Customize",
+  "homepage": "https://github.com/nenshoukei/quick-panel-tools-customize",
   "author": "mokkosu55",
   "factorio_version": "2.0",
   "dependencies": ["base >= 2.0"],
-  "description": "Customize Tools tab in Quick Panel (only for controller users). Keep your favorite tools always same position!"
+  "description": "Customize Tools tab in Quick Panel (only for controller users). Keep your favorite tools always same position!\n\nクイックパネルのツールタブをカスタマイズします。（コントローラでのプレイ用）",
+  "package": {
+    "readme": "mod-portal/description.md",
+    "gallery": ["mod-portal/screenshot-1.png", "mod-portal/screenshot-2.png"],
+    "ignore": ["Makefile", "*.zip", "*.d.lua", "spec", "mod-portal/*"]
+  }
 }

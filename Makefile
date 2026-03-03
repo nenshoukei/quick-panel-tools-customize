@@ -1,10 +1,7 @@
-.PHONY: dev lint release
+.PHONY: dev lint
 
 dev:
 	luarocks install luacheck
 
 lint:
 	luacheck .
-
-release:
-	./make-release-zip.sh
