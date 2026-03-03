@@ -11,8 +11,6 @@ This guide provides an overview of Factorio mod development.
 - Prototypes are used as templates for the items, entities, recipes, etc. in the game engine.
 - Prototype definitions are typed as `data.XxxPrototype` and prototypes on runtime are typed as `LuaXxxPrototype`, where `Xxx` is type of prototype.
 - On Prototype stage, all prototype definitions can be accessed through `data.raw` like `data.raw["item"]["xxx"]`.
-    - Prototype definitions can be modified or removed by other mods, so check theire existence first to access them.
-    - To define a new prototype based on existing prototype, make a deep-copy by `table.deepcopy()` provided by Factorio.
 
 ## Data Lifecycle
 
