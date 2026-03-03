@@ -1,6 +1,10 @@
 -- Helper functions for busted tests
 -- This file is automatically loaded by busted
 
+local cjson = require("cjson.safe")
+
+_G.serpent = require("serpent")
+
 -- Mock Factorio globals for testing
 --- @diagnostic disable-next-line: missing-fields
 _G.data = {
@@ -36,7 +40,7 @@ _G.log = function () end
 -- Mock settings
 _G.settings = {
   startup = {
-    ["quick-panel-tools-customize-customize-json"] = {
+    ["mks-qptc-customize-json"] = {
       value = "",
     },
   },
@@ -45,57 +49,10 @@ _G.settings = {
 -- Mock helpers functions
 _G.helpers = {
   table_to_json = function (tbl)
-    return '{"s":' .. serpent.line(tbl.s) .. ',"h":' .. serpent.line(tbl.h) .. "}"
+    return cjson.encode(tbl)
   end,
   json_to_table = function (json_string)
-    print("DEBUG: json_to_table called with:", json_string)
-    if not json_string then
-      print("DEBUG: returning nil for nil input")
-      return nil
-    end
-
-    -- Remove leading/trailing whitespace
-    json_string = json_string:match("^%s*(.-)%s*$") or json_string
-
-    -- Simple mock for valid JSON
-    if json_string == '{"s":["a","b"],"h":["c"]}' then
-      print("DEBUG: returning valid table")
-      return { s = { "a", "b" }, h = { "c" } }
-    elseif json_string == '    {"s":["a","b"],"h":["c"]}' then
-      print("DEBUG: returning valid table (with spaces)")
-      return { s = { "a", "b" }, h = { "c" } }
-    elseif json_string == '{"s":[],"h":[]}' then
-      print("DEBUG: returning empty table")
-      return { s = {}, h = {} }
-    elseif json_string == "invalid" then
-      print("DEBUG: returning nil for invalid")
-      return nil
-    elseif json_string == '{"s":"not_array","h":[]}' then
-      return { s = "not_array", h = {} }
-    elseif json_string == '{"s":[],"h":"not_array"}' then
-      return { s = {}, h = "not_array" }
-    elseif json_string == "not_json" then
-      return nil
-    else
-      -- For any other string, return nil (invalid JSON)
-      print("DEBUG: returning nil for unknown:", json_string)
-      return nil
-    end
-  end,
-}
-
--- Mock serpent for table_to_json
-_G.serpent = {
-  line = function (obj)
-    if type(obj) == "table" then
-      local result = {}
-      for i, v in ipairs(obj) do
-        result[i] = '"' .. v .. '"'
-      end
-      return "[" .. table.concat(result, ",") .. "]"
-    else
-      return '"' .. tostring(obj) .. '"'
-    end
+    return cjson.decode(json_string)
   end,
 }
 

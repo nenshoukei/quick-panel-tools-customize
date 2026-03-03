@@ -3,5 +3,6 @@ return {
     coverage = false,
     helper = "spec/helper",
     pattern = ".*_spec.lua",
+    output = "gtest"
   },
 }
