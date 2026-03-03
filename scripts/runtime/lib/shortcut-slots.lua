@@ -61,9 +61,12 @@ function ShortcutSlots.new()
 end
 
 --- @param customization Customization
+--- @param dict ShortcutDict? defaults to `ShortcutDict.get_all()`
 --- @return ShortcutSlots
-function ShortcutSlots.new_with_customization(customization)
-  local dict = ShortcutDict.get_all()
+function ShortcutSlots.new_with_customization(customization, dict)
+  if not dict then
+    dict = ShortcutDict.get_all()
+  end
 
   --- @type table<ShortcutName, ShortcutSlotPosition>
   local name_to_position = {}

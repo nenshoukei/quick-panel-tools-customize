@@ -1,14 +1,13 @@
 local cjson = require("cjson")
 local Customization = require("scripts.shared.customization")
+local helper = require("spec.helper")
 
 describe("Customization", function ()
-  describe("to_json", function ()
-    teardown(function ()
-      settings.startup["mks-qptc-customize-json"] = {
-        value = "",
-      }
-    end)
+  setup(function ()
+    helper.reset_mocks()
+  end)
 
+  describe("to_json", function ()
     it("converts customization to json", function ()
       local customization = {
         shortcuts = { "shortcut1", "shortcut2" },
