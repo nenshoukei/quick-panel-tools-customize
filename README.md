@@ -63,9 +63,23 @@ If error occurs, you have to reset your Customize JSON on Startup settings. Sorr
 
 Required: `lua`, `luarocks`, VS Code with `Factorio Modding Tool Kit` extension.
 
-To install dependencies: `make dev`
+To install dependencies:
 
-To lint: `make lint`
+```
+make dev
+```
+
+To lint:
+
+```
+make lint
+```
+
+To run unit tests:
+
+```
+make test
+```
 
 To publish: Run VS Code task `Publish to Mod Portal`
 
