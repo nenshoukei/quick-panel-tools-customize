@@ -67,10 +67,6 @@ local function reset_mocks()
   }
 end
 
-local function create_mock_shortcut_dict()
-
-end
-
 reset_mocks()
 
 return {
