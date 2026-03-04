@@ -148,6 +148,29 @@ describe("Event", function ()
     end)
   end)
 
+  describe("clear_event_listeners", function ()
+    it("unregisters all event handlers", function ()
+      local handler1 = spy.new(function () end)
+      local handler2 = spy.new(function () end)
+
+      Event.register_event_handler(defines.events.on_gui_click, handler1 --[[@as EventHandler]])
+      Event.register_event_handler(defines.events.on_gui_closed, handler2 --[[@as EventHandler]])
+      spy_on_event:clear()
+
+      Event.clear_event_listeners()
+
+      assert.spy(spy_on_event).was.called(2)
+      assert.spy(spy_on_event).was.called_with(defines.events.on_gui_click, nil)
+      assert.spy(spy_on_event).was.called_with(defines.events.on_gui_closed, nil)
+
+      Event.dispatch_event({ name = defines.events.on_gui_click })
+      Event.dispatch_event({ name = defines.events.on_gui_closed })
+
+      assert.spy(handler1).was.called(0)
+      assert.spy(handler2).was.called(0)
+    end)
+  end)
+
   describe("dispatch_event", function ()
     it("calls registered handlers with event data", function ()
       local test_handler = spy.new(function () end)

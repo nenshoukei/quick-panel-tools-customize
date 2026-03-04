@@ -73,6 +73,14 @@ function Event.unregister_event_handler(handler)
   end
 end
 
+--- Clear all registered event listeners.
+function Event.clear_event_listeners()
+  for event_type, _ in pairs(event_type_to_registered_handlers) do
+    script.on_event(event_type, nil)
+  end
+  event_type_to_registered_handlers = {}
+end
+
 --- Dispatch an event to all registered handlers.
 ---
 --- @param event EventData
