@@ -43,11 +43,18 @@ function GuiComponent:_get_method_name_table()
   if table then return table end
 
   table = {
-    [self.handle_gui_event] = "handle_gui_event",
+    [self._handle_gui_event] = "_handle_gui_event",
   }
+  setmetatable(table, Metatable.weak_key_metatable)
+
   for method_name, method in pairs(class) do
     if type(method) == "function" then
       table[method] = method_name
+    elseif type(method) == "table" then
+      local mt = getmetatable(method)
+      if mt and type(mt.__call) == "function" then
+        table[method] = method_name
+      end
     end
   end
   class._method_name_table = table
@@ -95,7 +102,8 @@ function GuiComponent:listen_to_events(handler_method_map)
 end
 
 --- @param event GuiEventData
-function GuiComponent:handle_gui_event(event)
+--- @private
+function GuiComponent:_handle_gui_event(event)
   local method_name = event.element.tags[self.handler_tag_prefix .. tostring(event.name)]
   if method_name then
     self[method_name](self, event)
@@ -118,7 +126,7 @@ function GuiComponent:listen_to_gui_events(element, handler_method_map)
       error("Method not found for handler")
     end
     new_tags[self.handler_tag_prefix .. tostring(event_type)] = method_name
-    handler_map[event_type] = self.handle_gui_event
+    handler_map[event_type] = self._handle_gui_event
   end
   self:listen_to_events(handler_map)
   element.tags = new_tags
