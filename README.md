@@ -1,6 +1,6 @@
 [日本語版はこちら](README.ja.md)
 
-# Quick Panel Tool Customize
+# Quick Panel Tools Customize
 
 A Factorio mod that allows you to customize the Tools tab of the Quick Panel, which is primarily used when playing on Steam Deck or with a controller.
 
@@ -13,7 +13,7 @@ A Factorio mod that allows you to customize the Tools tab of the Quick Panel, wh
 
 Ever feel "I want to install a new mod, but it adds a new tool... It pushes off every tool buttons! I can't use my favorite tools as same position!" -- I felt it too.
 
-**Quick Panel Tool Customize** gives you the freedom to organize your tools exactly how you want it!
+**Quick Panel Tools Customize** gives you the freedom to organize your tools exactly how you want it!
 
 ## How to use
 
